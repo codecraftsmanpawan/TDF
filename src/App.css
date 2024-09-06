@@ -1,0 +1,10 @@
+/* Reset default browser styles */
+@tailwind base;
+
+/* Define component-specific styles */
+@tailwind components;
+
+/* Leverage utility classes for rapid styling */
+@tailwind utilities;
+
+/* Add custom styles for a refined user experience */
