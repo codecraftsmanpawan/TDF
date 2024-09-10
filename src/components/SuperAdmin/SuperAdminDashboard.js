@@ -33,6 +33,8 @@ const SuperAdminDashboard = () => {
    const totalFundGiven = filteredAdmins.reduce((acc, admin) => acc + Number(admin.budget), 0);
   const fundAllocatedToClient = filteredAdmins.reduce((acc, admin) => acc + Number(admin.allotedBudget), 0);
   const masterAdminAvailableFund = filteredAdmins.reduce((acc, admin) => acc + Number(admin.availableBudget), 0);
+  const totalCurrentProfitLoss = filteredAdmins.reduce((acc, admin) => acc + Number(admin.totalCurrentProfitLoss), 0);
+  const totalCurrentBrokerage = filteredAdmins.reduce((acc, admin) => acc + Number(admin.totalCurrentBrokerage), 0);
 
   // Helper function to get token and headers
   const getHeaders = () => {
@@ -284,17 +286,17 @@ const SuperAdminDashboard = () => {
               <div className="mt-1">Total Blocked Clients ID</div>
             </div>
             {/* Total Fund Given */}
-            <div className="max-w-xs mx-2 ml-3 my-2 p-4 bg-blue-200 rounded-lg flex flex-col items-center justify-center min-w-60 min-h-50">
+            <div className="max-w-xs mx-2 ml-3 my-2 p-4 bg-blue-200 rounded-lg flex flex-col items-center justify-center min-w-80 min-h-50">
               <CurrencyRupeeIcon className="w-7 h-7 text-blue-600 mb-2" />
               <div className="text-3xl font-bold text-blue-600">₹{totalFundGiven}.00</div>
               <div className="mt-1">Total Fund Given</div>
             </div>
             {/* Master Admin Available Fund */}
-            <div className="max-w-xs mx-2 ml-3 my-2 p-4 bg-red-200 rounded-lg flex flex-col items-center justify-center min-w-80 min-h-50">
+            {/* <div className="max-w-xs mx-2 ml-3 my-2 p-4 bg-red-200 rounded-lg flex flex-col items-center justify-center min-w-80 min-h-50">
               <CurrencyRupeeIcon className="w-7 h-7 text-red-600 mb-2" />
               <div className="text-3xl font-bold text-red-600">₹{masterAdminAvailableFund}.00</div>
               <div className="mt-1">Master Admin Available Fund</div>
-            </div>
+            </div> */}
             {/* Fund Allocated to Client */}
             <div className="max-w-xs mx-2 ml-4 my-2 p-4 bg-purple-200 rounded-lg flex flex-col items-center justify-center min-w-60 min-h-50">
               <CurrencyRupeeIcon className="w-7 h-7 text-purple-600 mb-2" />
@@ -302,9 +304,9 @@ const SuperAdminDashboard = () => {
               <div className="mt-1">Fund Allocated to Client</div>
             </div>
               {/* Brokerage */}
-            <div className="max-w-xs mx-2 ml-3 my-2 p-4 bg-green-200 rounded-lg flex flex-col items-center justify-center min-w-60 min-h-50">
+            <div className="max-w-xs mx-2 ml-3 my-2 p-4 bg-green-200 rounded-lg flex flex-col items-center justify-center min-w-80 min-h-50">
               <BanIcon className="w-7 h-7 text-green-600 mb-2" />
-              <div className="text-3xl font-bold text-green-600">123</div>
+              <div className="text-3xl font-bold text-green-600">{totalCurrentBrokerage}</div>
               <div className="mt-1">Brokerage</div>
             </div>
           </div>
@@ -341,14 +343,17 @@ const SuperAdminDashboard = () => {
                   <th className="px-4 py-2 border border-gray-400">
                     Total Budget
                   </th>
-                  <th className="px-4 py-2 border border-gray-400">
+                  {/* <th className="px-4 py-2 border border-gray-400">
                     Available Budget
-                  </th>
+                  </th> */}
                    <th className="px-4 py-2 border border-gray-400">
                   Client Allotted Budget
                   </th>
                   <th className="px-4 py-2 border border-gray-400">Added Clients</th>
                   <th className="px-4 py-2 border border-gray-400">Status</th>
+                  <th className="px-4 py-2 border border-gray-400">
+                    Current P/L
+                  </th>
                   <th className="px-4 py-2 border border-gray-400">
                     Brokerage
                   </th>
@@ -373,9 +378,9 @@ const SuperAdminDashboard = () => {
                     <td className="px-4 py-2 border border-gray-400 text-center">
                       ₹{masterAdmin.budget}.00
                     </td>
-                       <td className="px-4 py-2 border border-gray-400 text-center">
+                       {/* <td className="px-4 py-2 border border-gray-400 text-center">
                       ₹{masterAdmin.availableBudget}.00
-                    </td>
+                    </td> */}
                     <td className="px-4 py-2 border border-gray-400 text-center">
                       ₹{masterAdmin.allotedBudget}.00
                     </td>
@@ -396,7 +401,10 @@ const SuperAdminDashboard = () => {
                       </button>
                     </td>
                     <td className="px-4 py-2 border border-gray-400 text-center">
-                      {masterAdmin.mcx_brokerage}
+                      ₹{masterAdmin.totalCurrentProfitLoss}
+                    </td>
+                     <td className="px-4 py-2 border border-gray-400 text-center">
+                      ₹{masterAdmin.totalCurrentBrokerage}
                     </td>
                     <td className="px-4 py-2 border border-gray-400 text-center">
                       {new Date(masterAdmin.createdAt).toLocaleDateString()} {new Date(masterAdmin.createdAt).toLocaleTimeString()}

@@ -4,15 +4,21 @@ import axios from 'axios';
 import {jwtDecode} from 'jwt-decode';
 import TopNavbar from './TopNavbar';
 import BottomNav from './BottomNav';
+import Sidebar from './SideBar';
 import { FaMinus, FaPlus } from 'react-icons/fa';
-
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const TradeScreen = () => {
     const { instrumentId } = useParams();
+     const [isToggled, setIsToggled] = useState(false);
     const [stockData, setStockData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [clientId, setClientId] = useState('');
 
+    const toggleView = () => {
+        setIsToggled(!isToggled);
+    };
     useEffect(() => {
         const fetchStockData = async () => {
             try {
@@ -63,15 +69,15 @@ const TradeScreen = () => {
         );
     }
 
-    if (error) {
-        return (
-            <div className="flex justify-center items-center h-screen bg-gray-100">
-                <div className="text-red-500 text-center">
-                    <p>{error}</p>
-                </div>
-            </div>
-        );
-    }
+    // if (error) {
+    //     return (
+    //         <div className="flex justify-center items-center h-screen bg-gray-100">
+    //             <div className="text-red-500 text-center">
+    //                 <p>{error}</p>
+    //             </div>
+    //         </div>
+    //     );
+    // }
 
     const {
         Exchange = 'N/A',
@@ -90,7 +96,8 @@ const TradeScreen = () => {
         <>
             {/* Fixed Top Navbar */}
             <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
-                <TopNavbar />
+            <TopNavbar toggleSidebar={toggleView} />
+            <Sidebar isOpen={isToggled} closeSidebar={toggleView} />
             </div>
             
             {/* Page Content */}
@@ -122,6 +129,8 @@ const TradeScreen = () => {
             <div className="fixed bottom-0 left-0 right-0 z-50 bg-white shadow-md">
                 <BottomNav />
             </div>
+             {/* Toast Container */}
+            <ToastContainer />
         </>
     );
 };
@@ -150,32 +159,83 @@ const BuySellPage = ({ buyPrice, sellPrice, lotSize, exchange, instrumentIdentif
         setAmount((prevAmount) => Math.max(0, (parseFloat(prevAmount) + change).toFixed(2))); 
     };
 
-    const handleTrade = async () => {
-        const tradeType = isBuy ? 'buy' : 'sell';
-        const data = {
-            _id: clientId, 
-            instrumentIdentifier: instrumentIdentifier,
-            name: name,
-            exchange: exchange,
-            trade_type: tradeType,
-            quantity: parseFloat(amount),
-            price: isBuy ? buyPrice : sellPrice
-        };
+    // const handleTrade = async () => {
+    //     const tradeType = isBuy ? 'buy' : 'sell';
+    //     const data = {
+    //         _id: clientId, 
+    //         instrumentIdentifier: instrumentIdentifier,
+    //         name: name,
+    //         exchange: exchange,
+    //         trade_type: tradeType,
+    //         quantity: parseFloat(amount),
+    //         price: isBuy ? buyPrice : sellPrice
+    //     };
 
-        try {
-            const response = await axios.post('http://localhost:5000/api/var/client/trades', data, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('StocksUsertoken')}`,
-                }
-            });
-            console.log('Trade successful:', response.data);
-            // Optionally, you might want to show a success message or handle the response data
-        } catch (error) {
-            console.error('Error making trade:', error);
-            setError('Error making trade');
+    //     try {
+    //         const response = await axios.post('http://localhost:5000/api/var/client/trades', data, {
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //                 'Authorization': `Bearer ${localStorage.getItem('StocksUsertoken')}`,
+    //             }
+    //         });
+    //         // console.log('Trade successful:', response.data);
+    //         toast.success('Trade add successful!');
+    //     } catch (error) {
+    //         // console.error('Error making trade:', error);
+    //         // setError('Error making trade');
+    //     }
+    // };
+
+    const handleTrade = async () => {
+    const tradeType = isBuy ? 'buy' : 'sell';
+    
+    // Get current time in India/Kolkata timezone
+    const indiaTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+    const currentTime = new Date(indiaTime);
+
+    // Define trading hours for NSE (11:30 AM to 3:30 PM)
+    const startHour = 11;
+    const startMinute = 30;
+    const endHour = 15;
+    const endMinute = 30;
+
+    const startTime = new Date(currentTime);
+    startTime.setHours(startHour, startMinute, 0, 0);
+
+    const endTime = new Date(currentTime);
+    endTime.setHours(endHour, endMinute, 0, 0);
+
+    // Check if the exchange is NSE and the time is outside of trading hours
+    if (exchange.toUpperCase() === 'NSE') {
+        if (currentTime < startTime || currentTime > endTime) {
+            toast.error('Trading on NSE is only allowed between 11:30 AM and 3:30 PM.');
+            return;
         }
+    }
+
+    const data = {
+        _id: clientId,
+        instrumentIdentifier: instrumentIdentifier,
+        name: name,
+        exchange: exchange,
+        trade_type: tradeType,
+        quantity: parseFloat(amount),
+        price: isBuy ? buyPrice : sellPrice,
     };
+
+    try {
+        const response = await axios.post('http://localhost:5000/api/var/client/trades', data, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('StocksUsertoken')}`,
+            }
+        });
+        toast.success('Trade successful!');
+    } catch (error) {
+        toast.error('Error making trade');
+    }
+};
+
 
     const isMCX = exchange.toUpperCase() === 'MCX';
 
@@ -212,7 +272,7 @@ const BuySellPage = ({ buyPrice, sellPrice, lotSize, exchange, instrumentIdentif
                             type="text"
                             className="border rounded-lg py-2 px-4 w-full text-lg font-semibold text-blue-900 mx-2 text-center"
                             value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
+                            onChange={(e) => setAmount(e.target.value)} readOnly
                         />
                     </div>
 

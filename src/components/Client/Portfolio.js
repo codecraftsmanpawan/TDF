@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import {jwtDecode} from 'jwt-decode'; // Import default import
+import { jwtDecode } from 'jwt-decode'; // Default import
 import { useNavigate } from 'react-router-dom';
 import TopNavbar from './TopNavbar';
 import BottomNav from './BottomNav';
@@ -17,7 +17,7 @@ const StockPortfolio = () => {
     const [activeTab, setActiveTab] = useState('trades');
     const navigate = useNavigate();
     const [responseData, setResponseData] = useState(null);
-    const [overallProfitLoss, setOverallProfitLoss] = useState('0.00');
+    const [totalProfitLoss, setTotalProfitLoss] = useState('0.00');
 
     const getToken = () => localStorage.getItem('StocksUsertoken');
 
@@ -77,102 +77,112 @@ const StockPortfolio = () => {
                     'Authorization': `Bearer ${token}`
                 }
             });
+
+            const { QuotationLot, ...rest } = response.data;
+
             setRealTimeData((prevData) => ({
                 ...prevData,
-                [instrumentIdentifier]: response.data
+                [instrumentIdentifier]: {
+                    ...rest,
+                    QuotationLot
+                }
             }));
         } catch (err) {
             console.error('Error fetching real-time data:', err);
         }
     };
 
-    const calculateProfitLoss = (tradePrice, lastTradePrice, tradeType) => {
-        if (!lastTradePrice) return { value: 'N/A', color: 'text-gray-500', percentage: 'N/A' };
-        const profitLoss = (lastTradePrice - tradePrice) * (tradeType === 'buy' ? 1 : -1);
-        const percentage = ((profitLoss / tradePrice) * 100).toFixed(2);
+    const calculateProfitLoss = (totalInvestment, totalCurrentValue, tradeType, exchange, QuotationLot) => {
+        let profitLossValue;
+
+        if (tradeType === 'buy') {
+            profitLossValue = totalCurrentValue - totalInvestment;
+        } else if (tradeType === 'sell') {
+            profitLossValue = totalInvestment - totalCurrentValue;
+        } else {
+            return { value: 'N/A', color: 'text-gray-500', percentage: 'N/A' };
+        }
+
+        if (exchange === 'MCX') {
+            profitLossValue *= QuotationLot;
+        }
+
         return {
-            value: profitLoss.toFixed(2),
-            color: profitLoss >= 0 ? 'text-green-500' : 'text-red-500',
-            percentage: percentage
+            value: profitLossValue >= 0 ? `₹${profitLossValue.toFixed(2)}` : `-₹${Math.abs(profitLossValue).toFixed(2)}`,
+            color: profitLossValue >= 0 ? 'text-green-500' : 'text-red-500',
+            percentage: ((profitLossValue / totalInvestment) * 100).toFixed(2)
         };
     };
 
-    const calculateOverallProfitLoss = () => {
-        const result = trades.reduce((acc, trade) => {
-            const stockData = realTimeData[trade.instrumentIdentifier] || {};
-            const lastTradePrice = stockData.LastTradePrice || 0;
-            const { value: profitLossValue } = calculateProfitLoss(trade.price, lastTradePrice, trade.action);
-            return acc + parseFloat(profitLossValue) || 0;
-        }, 0).toFixed(2);
+    const calculateTotalProfitLoss = () => {
+        let total = 0;
 
-        return result;
+        groupedTrades.forEach((tradeData) => {
+            const { totalInvestment, totalCurrentValue } = tradeData;
+            const { value: profitLossValue } = calculateProfitLoss(totalInvestment, totalCurrentValue, tradeData.tradeData.tradeType, tradeData.exchange, tradeData.QuotationLot);
+            
+            const numericValue = parseFloat(profitLossValue.replace(/[^\d.-]/g, ''));
+            total += isNaN(numericValue) ? 0 : numericValue;
+        });
+
+        setTotalProfitLoss(total >= 0 ? `₹${total.toFixed(2)}` : `-₹${Math.abs(total).toFixed(2)}`);
     };
 
-useEffect(() => {
-    const intervalId = setInterval(() => {
-        const updateProfitLoss = async () => {
-            // console.log("Updating profit/loss..."); // Debugging line
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            const updateProfitLoss = async () => {
+                const token = getToken();
+                const userId = getUserIdFromToken();
 
-            const token = getToken(); // Get token from localStorage
-            const userId = getUserIdFromToken(); // Decode token to get userId
+                if (!token) {
+                    setError("No token found");
+                    return;
+                }
 
-            if (!token) {
-                setError("No token found");
-                // console.log("No token found"); 
-                return;
-            }
+                if (!userId) {
+                    setError("Invalid token or user ID not found");
+                    return;
+                }
 
-            if (!userId) {
-                setError("Invalid token or user ID not found");
-                // console.log("Invalid token or user ID not found"); 
-                return;
-            }
+                const profitLoss = parseFloat(totalProfitLoss.replace(/[^\d.-]/g, ''));
 
-            // Ensure profitLoss is a number
-            const profitLoss = parseFloat(overallProfitLoss);
-            // console.log("Calculated Profit/Loss:", profitLoss);
+                const data = JSON.stringify({
+                    profitLoss
+                });
 
-            const data = JSON.stringify({
-                profitLoss
-            });
+                const config = {
+                    method: 'patch',
+                    maxBodyLength: Infinity,
+                    url: `http://localhost:5000/api/var/client/updateProfitLoss/${userId}`,
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    data: data
+                };
 
-            const config = {
-                method: 'patch',
-                maxBodyLength: Infinity,
-                url: `http://localhost:5000/api/var/client/updateProfitLoss/${userId}`, 
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                data: data
+                try {
+                    const response = await axios.request(config);
+                    setResponseData(response.data);
+                } catch (err) {
+                    setError(err.message || "Something went wrong");
+                }
             };
 
-          
-
-            try {
-                const response = await axios.request(config);
-                // console.log("API Response:", response.data); // Debugging line
-                setResponseData(response.data);
-            } catch (err) {
-               
-                setError(err.message || "Something went wrong");
+            if (trades.length > 0 && Object.keys(realTimeData).length > 0) {
+                updateProfitLoss();
+                calculateTotalProfitLoss();
             }
-        };
+        }, 1000);
 
-        if (trades.length > 0 && Object.keys(realTimeData).length > 0) {
-            updateProfitLoss();
-        }
-    }, 1000); // Update every second
-
-    return () => clearInterval(intervalId); // Clear interval on component unmount
-}, [trades, realTimeData, overallProfitLoss]); // Dependencies to trigger the effect
+        return () => clearInterval(intervalId);
+    }, [trades, realTimeData, totalProfitLoss]);
 
     useEffect(() => {
         if (trades.length > 0 && Object.keys(realTimeData).length > 0) {
-            const profitLoss = calculateOverallProfitLoss();
-            setOverallProfitLoss(profitLoss);
+            calculateTotalProfitLoss();
         }
-    }, [trades, realTimeData]); // Update when trades or realTimeData change
+    }, [trades, realTimeData]);
 
     const handleRowClick = (instrumentIdentifier) => {
         navigate(`/trade/detail/${instrumentIdentifier}`);
@@ -214,8 +224,8 @@ useEffect(() => {
         return Object.values(groupedTrades).map((data) => {
             const { instrumentIdentifier, exchange, totalQuantity, totalInvestment, trades } = data;
             const stockData = realTimeData[instrumentIdentifier] || {};
-            const lastTradePrice = stockData.LastTradePrice || 0;
-            const totalCurrentValue = lastTradePrice * totalQuantity;
+            const currentPrice = data.action === 'buy' ? stockData.BuyPrice : stockData.SellPrice;
+            const totalCurrentValue = currentPrice * totalQuantity;
             const totalProfitLoss = totalCurrentValue - totalInvestment;
 
             return {
@@ -225,7 +235,8 @@ useEffect(() => {
                 totalInvestment,
                 totalCurrentValue,
                 totalProfitLoss,
-                lastTradePrice,
+                Close: currentPrice,
+                QuotationLot: stockData.QuotationLot || 1, 
                 tradeData: trades[0]
             };
         }).filter(tradeData => {
@@ -240,18 +251,22 @@ useEffect(() => {
     };
 
     const getButtonColor = (action) => {
-        return action === 'buy' ? 'bg-red-500' : 'bg-green-500';
+        return action === 'sell' ? 'bg-red-500' : 'bg-green-500';
+    };
+
+    const formatQuantity = (quantity, exchange) => {
+        return exchange === 'MCX' ? `${quantity} Lot` : `${quantity} Share`;
     };
 
     if (loading) {
         return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
     }
 
-    // if (error) {
-    //     return <div className="flex items-center justify-center min-h-screen text-red-500">Error: {error}</div>;
-    // }
-
     const groupedTrades = groupTradesByInstrument(trades);
+
+    const handleNavigation = () => {
+        navigate('/history');
+    };
 
     return (
         <>
@@ -263,93 +278,104 @@ useEffect(() => {
 
                 <div className="mb-4">
                     <div className="flex justify-between mb-2">
-                        <span className="text-xl font-semibold">Overall Profit/Loss: ₹{overallProfitLoss}</span>
+                        <span className="text-xl font-semibold">Total Profit/Loss: {totalProfitLoss}</span>
                     </div>
                 </div>
 
                 <div className="bg-white shadow-md rounded p-4 mb-12">
                     <div className="flex border-b">
                         <button 
-                            className={`py-2 px-8 ${activeTab === 'trades' ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded-l`} 
+                            className={`py-2 px-5 ${activeTab === 'trades' ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded-l`} 
                             onClick={() => handleTabChange('trades')}
                         >
                             Trades
                         </button>
                         <button 
-                            className={`py-2 px-8 ${activeTab === 'bids' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`} 
+                            className={`py-2 px-4 ${activeTab === 'bids' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`} 
                             onClick={() => handleTabChange('bids')}
                         >
                             Bids
                         </button>
                         <button 
-                            className={`py-2 px-8 ${activeTab === 'stoploss' ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded-r`} 
+                            className={`py-2 px-5 ${activeTab === 'stoploss' ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded-r`} 
                             onClick={() => handleTabChange('stoploss')}
                         >
                             Stoploss
+                        </button>
+                        <button className={`py-2 px-5 bg-gray-200 rounded-r`} onClick={handleNavigation}>
+                            History
                         </button>
                     </div>
 
                     {activeTab === 'trades' && (
                         <div className="overflow-x-auto mt-4">
-                            <table className="min-w-full bg-white table-auto">
-                                <thead>
-                                    <tr className="bg-blue-500 text-white">
-                                        <th className="py-2 px-4">#</th>
-                                        <th className="py-2 px-4">Stock</th>
-                                        <th className="py-2 px-4">Instrument</th>
-                                        <th className="py-2 px-4">Exchange</th>
-                                        <th className="py-2 px-4">Quantity</th>
-                                        <th className="py-2 px-4">Action</th>
-                                        <th className="py-2 px-4">Investment Value</th>
-                                        <th className="py-2 px-4">Current Value</th>
-                                        <th className="py-2 px-4">Profit/Loss</th>
-                                        <th className="py-2 px-4">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {groupedTrades.length > 0 ? (
-                                        groupedTrades.map((tradeData, index) => {
-                                            const { instrumentIdentifier, exchange, totalQuantity, totalInvestment, totalCurrentValue, lastTradePrice, tradeData: trade } = tradeData;
-                                            const { value: profitLossValue, color: profitLossColor, percentage } = calculateProfitLoss(totalInvestment / totalQuantity, lastTradePrice, trade.action);
+                          <table className="min-w-full bg-white table-auto">
+                            <thead>
+                                <tr className="bg-blue-500 text-white">
+                                    <th className="py-2 px-4">#</th>
+                                    <th className="py-2 px-4">Stock</th>
+                                    <th className="py-2 px-4">Instrument</th>
+                                    <th className="py-2 px-4">Exchange</th>
+                                    <th className="py-2 px-4">Quantity</th>
+                                    <th className="py-2 px-4">Trade Type</th>
+                                    <th className="py-2 px-4">Trade Price</th>
+                                    <th className="py-2 px-4">Investment Value</th>
+                                    <th className="py-2 px-4">Current Value</th>
+                                    <th className="py-2 px-4">Profit/Loss</th>
+                                    <th className="py-2 px-4">Current Price</th>
+                                    <th className="py-2 px-4">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {groupedTrades.length > 0 ? (
+                                    groupedTrades.map((tradeData, index) => {
+                                        const { instrumentIdentifier, exchange, totalQuantity, totalInvestment, totalCurrentValue, tradeData: trade, QuotationLot } = tradeData;
+                                        const stockData = realTimeData[instrumentIdentifier] || {};
+                                        const currentPrice = trade.action === 'buy' ? stockData.BuyPrice : stockData.SellPrice;
+                                        const { value: profitLossValue, color: profitLossColor, percentage } = calculateProfitLoss(totalInvestment, totalCurrentValue, trade.tradeType, exchange, QuotationLot);
 
-                                            return (
-                                                <tr 
-                                                    key={instrumentIdentifier} 
-                                                    className={`${index % 2 === 0 ? 'bg-white' : 'bg-blue-100'} text-center cursor-pointer`}
-                                                    onClick={() => handleRowClick(instrumentIdentifier)}
-                                                >
-                                                    <td className="py-2 px-4 border-b">{index + 1}</td>
-                                                    <td className="py-2 px-4 border-b">{trade.name}</td>
-                                                    <td className="py-2 px-4 border-b">{formatInstrumentIdentifier(instrumentIdentifier)}</td>
-                                                    <td className="py-2 px-4 border-b">{exchange}</td>
-                                                    <td className="py-2 px-4 border-b">{totalQuantity}</td>
-                                                    <td className="py-2 px-4 border-b" style={{ textTransform: 'capitalize' }}>{trade.action}</td>
-                                                    <td className="py-2 px-4 border-b">₹{totalInvestment.toFixed(2)}</td>
-                                                    <td className="py-2 px-4 border-b">₹{totalCurrentValue.toFixed(2)}</td>
-                                                    <td className="py-2 px-4 border-b">
-                                                        <span className={profitLossColor}>{profitLossValue} ({percentage}%)</span>
-                                                    </td>
-                                                    <td className="py-2 px-4 border-b">
-                                                        <button
-                                                            className={`text-white font-bold py-1 px-3 rounded ${getButtonColor(trade.action)}`}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation(); 
-                                                                handleButtonClick(trade);
-                                                            }}
-                                                        >
-                                                            {trade.action === 'buy' ? 'Sell' : 'Buy'}
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })
-                                    ) : (
-                                        <tr>
-                                            <td colSpan="10" className="text-center py-4">No trades available.</td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                        return (
+                                            <tr 
+                                                key={instrumentIdentifier} 
+                                                className={`${index % 2 === 0 ? 'bg-white' : 'bg-blue-100'} text-center cursor-pointer`}
+                                                onClick={() => handleRowClick(instrumentIdentifier)}
+                                            >
+                                                <td className="py-2 px-4 border-b">{index + 1}</td>
+                                                <td className="py-2 px-4 border-b">{trade.name}</td>
+                                                <td className="py-2 px-4 border-b">{formatInstrumentIdentifier(instrumentIdentifier)}</td>
+                                                <td className="py-2 px-4 border-b">{exchange}</td>
+                                                <td className="py-2 px-4 border-b">{formatQuantity(totalQuantity, exchange)}</td>
+                                                <td className="py-2 px-4 border-b" style={{ textTransform: 'capitalize' }}>{trade.tradeType}</td>
+                                                <td className="py-2 px-4 border-b">{trade.price}</td>
+                                                <td className="py-2 px-4 border-b">₹{totalInvestment.toFixed(2)}</td>
+                                                <td className="py-2 px-4 border-b">₹{totalCurrentValue.toFixed(2)}</td>
+                                                <td className="py-2 px-4 border-b">
+                                                    <span className={profitLossColor}>{profitLossValue}</span>
+                                                </td>
+                                                <td className="py-2 px-4 border-b">
+                                                    {trade.action === 'buy' ? `₹${stockData.BuyPrice}` : `₹${stockData.SellPrice}`}
+                                                </td>
+                                                <td className="py-2 px-4 border-b">
+                                                    <button
+                                                        className={`text-white font-bold py-1 px-3 rounded capitalize ${getButtonColor(trade.action)}`}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleButtonClick(trade);
+                                                        }}
+                                                    >
+                                                        {trade.action}
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                ) : (
+                                    <tr>
+                                        <td colSpan="12" className="text-center py-4">No trades available.</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                          </table>
                         </div>
                     )}
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import {jwtDecode} from 'jwt-decode'; // Fixed import
+import {jwtDecode} from 'jwt-decode';
 import Navbar from './MasterAdminNav'
 
 const MasterAdminDetails = () => {

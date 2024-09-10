@@ -11,6 +11,7 @@ import MasterAdminView from './components/SuperAdmin/MasterAdminView';
 import MasterAdminClintView from './components/MasterAdmin/MasterAdminView';
 import MasteradminPassword from './components/MasterAdmin/MasterAdminPassword';
 import Profile from './components/MasterAdmin/Profile';
+import WeeklyPnl from './components/MasterAdmin/WeeklyPnl';
 import BlockPage from './components/MasterAdmin/404';
 import AddMasterId from './components/SuperAdmin/AddMasterId';
 import SuperAdminDashboard from './components/SuperAdmin/SuperAdminDashboard';
@@ -30,6 +31,8 @@ import Stoploss from './components/Client/StopLoss';
 import SelectTrade from './components/Client/SelectTrade';
 import TradeDetail from './components/Client/TradeDetail';
 import TradeAction from './components/Client/TradeAction';
+import History from './components/Client/Histrory';
+
 
 function App() {
   return (
@@ -41,6 +44,7 @@ function App() {
         <Route path="/masteradmin/login" element={<MasterAdminLogin />} />
         <Route path="/masteradmin/dashboard" element={<MasterAdminDashboard />} />
         <Route path="/masteradmin/AddClient" element={<AddClientId />} />
+         <Route path="/masteradmin/weeklypnl" element={<WeeklyPnl />} />
          <Route path="/edit-master-client/:id" element={<MasterAdminUpdate />} />
           <Route path="/view-master-client/:id" element={<MasterAdminClintView />} />
             <Route path="/masteradmin/password" element={<MasteradminPassword />} />
@@ -66,6 +70,8 @@ function App() {
                          <Route path="/selectTrade" element={<SelectTrade />} />
                           <Route path="/trade/detail/:instrumentIdentifier" element={<TradeDetail />} />
                            <Route path="/trade/:action/:instrumentIdentifier" element={<TradeAction />} />
+                               <Route path="/history" element={<History />} />
+                              
       </Routes>
     </div>
   );

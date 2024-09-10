@@ -80,8 +80,8 @@ const StockDetailPage = () => {
     const {
         name = 'N/A',
         Exchange = 'N/A',
-        PriceChange = 34.69999999999982, 
-        PriceChangePercentage = 0.5160810559583539,  
+        PriceChange, 
+        PriceChangePercentage,  
         LastTradePrice = 0,
         BuyPrice = 0,
         SellPrice = 0,
@@ -126,8 +126,8 @@ const StockDetailPage = () => {
                         </div>
                     </div>
                     <div className="text-right">
-                        <p className={`font-semibold ${PriceChange > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                            {PriceChange > 0 ? `+${(PriceChangePercentage * 100).toFixed(2)}%` : `${(PriceChangePercentage * 100).toFixed(2)}%`}
+                        <p className={`font-semibold ${PriceChangePercentage > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                            {PriceChangePercentage.toFixed(2)}%
                         </p>
                         <p className="text-lg font-bold">₹{LastTradePrice.toFixed(2)}</p>
                     </div>

@@ -14,7 +14,9 @@ const MasterAdminView = () => {
   const [filteredClients, setFilteredClients] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
-
+  // New states to store total profit/loss and brokerage
+  const [totalProfitLoss, setTotalProfitLoss] = useState(0);
+  const [totalBrokerage, setTotalBrokerage] = useState(0);
   useEffect(() => {
     const token = localStorage.getItem('superAdminToken');
     const requestOptions = {
@@ -63,6 +65,14 @@ const MasterAdminView = () => {
     setModalOpen(false);
     setSelectedClient(null);
   };
+
+  // Calculate total profit/loss and brokerage whenever filteredClients changes
+  useEffect(() => {
+    const totalProfitLoss = filteredClients.reduce((acc, client) => acc + (client.currentProfitLoss || 0), 0);
+    const totalBrokerage = filteredClients.reduce((acc, client) => acc + (client.currentBrokerage || 0), 0);
+    setTotalProfitLoss(totalProfitLoss);
+    setTotalBrokerage(totalBrokerage);
+  }, [filteredClients]);
 
   const handleStatusUpdate = async (status) => {
     if (selectedClient) {
@@ -188,17 +198,13 @@ const MasterAdminView = () => {
                 {masterAdminData.clients.length}
               </div>
             </div>
-             <div className="bg-white p-4 shadow rounded-lg">
+           <div className="bg-white p-4 shadow rounded-lg">
               <div className="text-lg font-bold">Total Profit/Loss</div>
-              <div className="text-gray-700">
-             444
-              </div>
+              <div className="text-gray-700">₹{totalProfitLoss}</div>
             </div>
-             <div className="bg-white p-4 shadow rounded-lg">
+            <div className="bg-white p-4 shadow rounded-lg">
               <div className="text-lg font-bold">Total Brokerage</div>
-              <div className="text-gray-700">
-             444
-              </div>
+              <div className="text-gray-700">₹{totalBrokerage}</div>
             </div>
           </div>
         </div>
@@ -274,8 +280,8 @@ const MasterAdminView = () => {
                       {client.status === "inactive" ? "Blocked" : client.status.charAt(0).toUpperCase() + client.status.slice(1)}
                     </button>
                   </td>
-                   <td className="px-4 py-2 border border-gray-400 text-center">444</td>
-                     <td className="px-4 py-2 border border-gray-400 text-center">444</td>
+                   <td className="px-4 py-2 border border-gray-400 text-center">₹{client.currentProfitLoss}</td>
+                    <td className="px-4 py-2 border border-gray-400 text-center">₹{client.currentbrokerage}</td>
                  <td className="px-4 py-2 border border-gray-400 text-center">
     <Link
                         to={`/Client/View/${encodeURIComponent(

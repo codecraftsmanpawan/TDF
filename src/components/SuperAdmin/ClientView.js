@@ -26,11 +26,26 @@ const getOppositeActionPrice = (trade, realTimeData) => {
       : 0;
 };
 
+// Helper function to capitalize first letter of a string
+const capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1);
+
 const ClientCard = () => {
   const { id } = useParams();
   const [client, setClient] = useState(null);
   const [trades, setTrades] = useState([]);
   const [realTimeData, setRealTimeData] = useState({});
+  const [tradeHistory, setTradeHistory] = useState([]);
+  const [error, setError] = useState(null); // Added error state
+
+  // Added state for the trade summary
+  const [nseTrades, setNseTrades] = useState([]);
+  const [mcxTrades, setMcxTrades] = useState([]);
+  const [totalBrokerage, setTotalBrokerage] = useState(0);
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [totalNSEAmount, setTotalNSEAmount] = useState(0);
+  const [totalMCXAmount, setTotalMCXAmount] = useState(0);
+  const [brokeragePerNSECrore, setBrokeragePerNSECrore] = useState(0);
+  const [brokeragePerMCX, setBrokeragePerMCX] = useState(0);
 
   useEffect(() => {
     const fetchClientData = async () => {
@@ -43,6 +58,7 @@ const ClientCard = () => {
         });
         setClient(response.data.client);
       } catch (error) {
+        setError('Error fetching client data.');
         console.error('Error fetching client data:', error);
       }
     };
@@ -55,12 +71,16 @@ const ClientCard = () => {
             'Authorization': `Bearer ${token}`
           }
         });
-        setTrades(response.data.trades);
+        const tradesData = response.data.trades || [];
+        setTrades(tradesData);
+        setNseTrades(tradesData.filter(trade => trade.exchange === 'NSE'));
+        setMcxTrades(tradesData.filter(trade => trade.exchange === 'MCX'));
         // Fetch real-time data for each trade
-        response.data.trades.forEach(trade => {
+        tradesData.forEach(trade => {
           fetchRealTimeData(trade.instrumentIdentifier);
         });
       } catch (error) {
+        setError('Error fetching trades data.');
         console.error('Error fetching trades data:', error);
       }
     };
@@ -78,13 +98,37 @@ const ClientCard = () => {
           [instrumentIdentifier]: response.data
         }));
       } catch (err) {
+        setError('Error fetching real-time data.');
         console.error('Error fetching real-time data:', err);
+      }
+    };
+
+    const fetchTradeHistory = async () => {
+      try {
+        const token = getToken();
+        const response = await axios.get(`http://localhost:5000/api/var/client/trades/client/brokerage/${id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        setTradeHistory(response.data || []);
+      
+        setTotalBrokerage(response.data.totalBrokerage || 0);
+        setTotalAmount(response.data.totalAmount || 0);
+        setTotalNSEAmount(response.data.totalNSEAmount || 0);
+        setTotalMCXAmount(response.data.totalMCXAmount || 0);
+        setBrokeragePerNSECrore(response.data.brokeragePerNSECrore || 0);
+        setBrokeragePerMCX(response.data.brokeragePerMCX || 0);
+      } catch (error) {
+        setError('Error fetching trade history.');
+        console.error('Error fetching trade history:', error);
       }
     };
 
     if (id) {
       fetchClientData();
       fetchTradesData();
+      fetchTradeHistory();
     }
   }, [id]);
 
@@ -103,6 +147,7 @@ const ClientCard = () => {
         // Update the state to remove the deleted trade
         setTrades(trades.filter(trade => trade._id !== tradeId));
       } catch (error) {
+        setError('Error deleting trade.');
         console.error('Error deleting trade:', error);
       }
     }
@@ -169,51 +214,146 @@ const ClientCard = () => {
         </div>
 
         {/* Trades Data */}
-        <div className="mt-16">
+        <div className="mt-16 p-4">
           <h2 className="text-xl font-semibold mb-4">Trades</h2>
           <div className="overflow-x-auto">
-            <table className="min-w-full bg-white shadow-lg rounded-lg">
+              <table className="min-w-full bg-white table-auto border-collapse mb-6">
               <thead>
-                <tr className="border-b">
-                  <th className="p-2 text-left">Stock</th>
-                  <th className="p-2 text-left">Action</th>
-                  <th className="p-2 text-left">Quantity</th>
-                  <th className="p-2 text-left">Price</th>
-                  <th className="p-2 text-left">Opposite Action Price</th>
-                  <th className="p-2 text-left">Profit/Loss</th>
-                  <th className="p-2 text-left">Date</th>
-                  <th className="p-2 text-left">Status</th>
-                  <th className="p-2 text-left">Actions</th>
+              <tr className="bg-blue-500 text-white">
+                   <th className="p-2">#</th>
+                  <th className="p-2">Stock</th>
+                  <th className="p-2">Action</th>
+                  <th className="p-2">Quantity</th>
+                  <th className="p-2">Price</th>
+                  <th className="p-2">Opposite Price</th>
+                  <th className="p-2">Profit/Loss</th>
+                  <th className="p-2">Date</th>
+                  <th className="p-2">Status</th>
+                  <th className="p-2">Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                {trades.map(trade => {
-                  const oppositeActionPrice = getOppositeActionPrice(trade, realTimeData);
-                  const { value: profitLossValue, color: profitLossColor, percentage } = calculateProfitLoss(trade.price, oppositeActionPrice, trade.action);
+              <tbody className='text-center'>
+           {trades.length ? trades.map((trade, index) => {
+  const oppositeActionPrice = getOppositeActionPrice(trade, realTimeData);
+  const { value: profitLossValue, color: profitLossColor, percentage } = calculateProfitLoss(trade.price, oppositeActionPrice, trade.action);
 
-                  return (
-                    <tr key={trade._id} className="border-b">
-                      <td className="p-2">{trade.name}</td>
-                      <td className="p-2">{trade.action}</td>
-                      <td className="p-2">{trade.quantity}</td>
-                      <td className="p-2">₹{trade.price}</td>
-                      <td className="p-2">₹{oppositeActionPrice || 'N/A'}</td>
-                      <td className={`p-2 ${profitLossColor}`}>{profitLossValue} ({percentage}%)</td>
-                      <td className="p-2">{new Date(trade.date).toLocaleDateString()}</td>
-                      <td className="p-2">{trade.status}</td>
-                      <td className="p-2">
-                        <button
-                          onClick={() => handleDeleteTrade(trade._id)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
+  return (
+    <tr key={trade._id} className="border-b">
+      <td className="p-2">{index + 1}</td>
+      <td className="p-2">{trade.name}</td>
+      <td className="p-2">{trade.action}</td>
+      <td className="p-2">{trade.quantity}</td>
+      <td className="p-2">₹{trade.price}</td>
+      <td className="p-2">₹{oppositeActionPrice || 'N/A'}</td>
+      <td className={`p-2 ${profitLossColor}`}>{profitLossValue} ({percentage}%)</td>
+      <td className="p-2">{new Date(trade.date).toLocaleDateString()}</td>
+      <td className="p-2">{trade.status}</td>
+      <td className="p-2">
+        <button
+          onClick={() => handleDeleteTrade(trade._id)}
+          className="text-red-500 hover:text-red-700"
+        >
+          Delete
+        </button>
+      </td>
+    </tr>
+  );
+}) : (
+  <tr>
+    <td colSpan="9" className="p-2 text-center">No trades available</td>
+  </tr>
+)}
+
               </tbody>
             </table>
+          </div>
+        </div>
+
+        {/* Trade History */}
+        <div className="mt-16 p-4">
+          <h1 className="text-3xl font-semibold mb-6 text-blue-600">Trade History</h1>
+          {error && <div className="text-red-600 mb-4">{error}</div>}
+          <div className="overflow-x-auto mt-4">
+            {/* Display Client Brokerage Info */}
+            {/* <div className="mb-6 p-4 bg-blue-100 rounded-lg">
+              <h2 className="text-2xl font-bold text-blue-700 mb-4">Client Brokerage</h2>
+              <p><strong>Share Brokerage:</strong> {client.share_brokerage}</p>
+              <p><strong>MCX Brokerage Type:</strong> {client.mcx_brokerage_type}</p>
+              <p><strong>MCX Brokerage:</strong> ₹{client.mcx_brokerage}</p>
+            </div> */}
+
+            {/* Summary */}
+            <div className="bg-blue-100 p-4 rounded-lg">
+              <h3 className="text-xl font-bold mb-2">Summary</h3>
+              <p><strong>Total Brokerage:</strong> ₹{totalBrokerage}</p>
+              <p><strong>Total Amount:</strong> ₹{totalAmount}</p>
+            </div>
+
+            {/* NSE Trades Table */}
+            <h2 className="text-2xl font-bold text-blue-700 mb-4 mt-6">NSE Trades</h2>
+            <div className="overflow-x-auto mb-2 mt-8">
+              <table className="min-w-full bg-white table-auto border-collapse mb-6">
+                <thead>
+                  <tr className="bg-blue-500 text-white">
+                    <th className="py-2 px-4">#</th>
+                    <th className="py-2 px-4">Name</th>
+                    <th className="py-2 px-4">Exchange</th>
+                    <th className="py-2 px-4">Trade Type</th>
+                    <th className="py-2 px-4">Quantity</th>
+                    <th className="py-2 px-4">Price</th>
+                    <th className="py-2 px-4">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {nseTrades.map((trade, index) => (
+                    <tr key={trade._id} className={`${index % 2 === 0 ? 'bg-white' : 'bg-blue-50'} text-center`}>
+                      <td className="py-2 px-4 border-b">{index + 1}</td>
+                      <td className="py-2 px-4 border-b">{trade.name}</td>
+                      <td className="py-2 px-4 border-b">{trade.exchange}</td>
+                      <td className="py-2 px-4 border-b">{capitalizeFirstLetter(trade.tradeType)}</td>
+                      <td className="py-2 px-4 border-b">{trade.quantity}</td>
+                      <td className="py-2 px-4 border-b">₹{trade.price}</td>
+                      <td className="py-2 px-4 border-b">{new Date(trade.date).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xl font-semibold mb-4">Total NSE Amount: ₹{totalNSEAmount}</p>
+            <p className="text-xl font-semibold mb-4">Total NSE Brokerage: ₹{brokeragePerNSECrore}</p>
+
+            {/* MCX Trades Table */}
+            <h2 className="text-2xl font-bold text-blue-700 mb-4 mt-6 mb-8">MCX Trades</h2>
+            <div className="overflow-x-auto mb-4">
+              <table className="min-w-full bg-white table-auto border-collapse">
+                <thead>
+                  <tr className="bg-blue-500 text-white">
+                    <th className="py-2 px-4">#</th>
+                    <th className="py-2 px-4">Name</th>
+                    <th className="py-2 px-4">Exchange</th>
+                    <th className="py-2 px-4">Trade Type</th>
+                    <th className="py-2 px-4">Quantity</th>
+                    <th className="py-2 px-4">Price</th>
+                    <th className="py-2 px-4">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {mcxTrades.map((trade, index) => (
+                    <tr key={trade._id} className={`${index % 2 === 0 ? 'bg-white' : 'bg-blue-50'} text-center`}>
+                      <td className="py-2 px-4 border-b">{index + 1}</td>
+                      <td className="py-2 px-4 border-b">{trade.name}</td>
+                      <td className="py-2 px-4 border-b">{trade.exchange}</td>
+                      <td className="py-2 px-4 border-b">{capitalizeFirstLetter(trade.tradeType)}</td>
+                      <td className="py-2 px-4 border-b">{trade.quantity}</td>
+                      <td className="py-2 px-4 border-b">₹{trade.price}</td>
+                      <td className="py-2 px-4 border-b">{new Date(trade.date).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xl font-semibold mb-4">Total MCX Amount: ₹{totalMCXAmount}</p>
+            <p className="text-xl font-semibold mb-4">Total MCX Brokerage: ₹{brokeragePerMCX}</p>
           </div>
         </div>
       </div>

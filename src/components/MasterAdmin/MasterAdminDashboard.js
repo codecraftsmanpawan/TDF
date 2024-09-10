@@ -11,6 +11,7 @@ import {
   XIcon,
 } from "@heroicons/react/outline";
 import "react-toastify/dist/ReactToastify.css";
+import {jwtDecode} from "jwt-decode";
 import Navbar from "./MasterAdminNav";
 
 const MasterAdminDashboard = () => {
@@ -23,6 +24,8 @@ const MasterAdminDashboard = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const totalBudget = clientsData.reduce((acc, client) => acc + client.budget, 0);
   const totalAvailableBudget = clientsData.reduce((acc, client) => acc + client.availableBudget, 0);
+  const totalProfitLoss = clientsData.reduce((acc, client) => acc + client.currentProfitLoss, 0);
+  const totalBrokerage = clientsData.reduce((acc, client) => acc + client.currentbrokerage, 0);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -32,8 +35,12 @@ const MasterAdminDashboard = () => {
           return;
         }
 
+        // Decode the token to get the master_admin_id
+        const decodedToken = jwtDecode(token);
+        const masterAdminId = decodedToken.id;
+
         const response = await fetch(
-          "http://localhost:5000/api/var/masterAdmin/getAllClients",
+          `http://localhost:5000/api/var/masterAdmin/clients/${masterAdminId}`, 
           {
             method: "GET",
             headers: {
@@ -46,9 +53,9 @@ const MasterAdminDashboard = () => {
         const data = await response.json();
         if (response.ok && data.success) {
           setClientsData(data.clients);
-          setFilteredClients(data.clients); // Set filtered clients initially
+          setFilteredClients(data.clients);
         } else {
-          toast.error(data.message || "Failed to fetch clients data");
+          // toast.error(data.message || "Failed to fetch clients data");
         }
       } catch (error) {
         console.error("Fetch error:", error);
@@ -172,6 +179,7 @@ const MasterAdminDashboard = () => {
       toast.error("Failed to delete client");
     }
   };
+  
   return (
     <>
       <Navbar />
@@ -222,12 +230,12 @@ const MasterAdminDashboard = () => {
     </div>
     <div className="p-4 bg-blue-200 rounded-lg flex flex-col items-center justify-center min-w-60 min-h-50">
       <BanIcon className="w-7 h-7 text-blue-600 mb-2" />
-      <div className="text-3xl font-bold text-blue-600">123</div>
+      <div className="text-3xl font-bold text-blue-600">{totalProfitLoss}</div>
       <div className="mt-1">Total Profit/Loss</div>
     </div>
     <div className="p-4 bg-green-200 rounded-lg flex flex-col items-center justify-center min-w-60 min-h-50">
       <BanIcon className="w-7 h-7 text-green-600 mb-2" />
-      <div className="text-3xl font-bold text-green-600">123</div>
+      <div className="text-3xl font-bold text-green-600">{totalBrokerage}</div>
       <div className="mt-1">Total Brokerage</div>
     </div>
   </div>
@@ -297,9 +305,6 @@ const MasterAdminDashboard = () => {
                     <td className="px-4 py-2 border border-gray-400 text-center">
                       {index + 1}
                     </td>
-                    {/* <td className="px-4 py-2 border border-gray-400">
-                      {client.client_id}
-                    </td> */}
                      <td className="px-4 py-2 border border-gray-400 text-center">
                       {client.username}
                     </td>
@@ -324,11 +329,16 @@ const MasterAdminDashboard = () => {
     {client.status === "inactive" ? "Blocked" : client.status.charAt(0).toUpperCase() + client.status.slice(1)}
   </button>
 </td>
+             <td
+  className={`px-4 py-2 border border-gray-400 ${
+    client.currentProfitLoss < 0 ? 'text-red-500' : 'text-green-500'
+  }`}
+>
+  {client.currentProfitLoss}
+</td>
+
                     <td className="px-4 py-2 border border-gray-400">
-                     555
-                    </td>
-                      <td className="px-4 py-2 border border-gray-400">
-                     555
+                      {client.currentbrokerage}
                     </td>
                     <td className="px-4 py-2 border border-gray-400">
                       {new Date(client.createdAt).toLocaleDateString()}

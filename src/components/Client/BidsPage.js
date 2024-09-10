@@ -70,7 +70,6 @@ const Bids = () => {
                         <th className="py-2 px-4">#</th>
                         <th className="py-2 px-4">Name</th>
                         <th className="py-2 px-4">Exchange</th>
-                        <th className="py-2 px-4">Close</th>
                         <th className="py-2 px-4">Buy</th>
                         <th className="py-2 px-4">Sell</th>
                         <th className="py-2 px-4">Bid Price</th>
@@ -95,15 +94,35 @@ const Bids = () => {
                                     <td className="py-2 px-4 border-b">{index + 1}</td>
                                     <td className="py-2 px-4 border-b">{stock.name || 'N/A'}</td>
                                     <td className="py-2 px-4 border-b">{stock.Exchange || 'N/A'}</td>
-                                    <td className="py-2 px-4 border-b">{stock.Close ? `₹${stock.Close}` : 'N/A'}</td>
                                     <td className="py-2 px-4 border-b">{stock.BuyPrice ? `₹${stock.BuyPrice}` : 'N/A'}</td>
                                     <td className="py-2 px-4 border-b">{stock.SellPrice ? `₹${stock.SellPrice}` : 'N/A'}</td>
                                     <td className={`py-2 px-4 border-b ${priceColor}`}>{priceToDisplay ? `₹${priceToDisplay}` : 'N/A'}</td>
                                     <td className="py-2 px-4 border-b">{bid.bidQuantity}</td>
                                     <td className="py-2 px-4 border-b">{tradeType}</td>
                                     <td className="py-2 px-4 border-b">{capitalizeFirstLetter(bid.status)}</td>
-                                    <td className="py-2 px-4 border-b">{new Date(bid.createdAt).toLocaleString()}</td>
-                                    <td className="py-2 px-4 border-b">{new Date(bid.updatedAt).toLocaleString()}</td>
+                                  <td className="py-2 px-4 border-b">
+  {new Date(bid.createdAt).toLocaleString('en-GB', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true
+  }).replace(',', ' at')}
+</td>
+<td className="py-2 px-4 border-b">
+  {new Date(bid.updatedAt).toLocaleString('en-GB', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true
+  }).replace(',', ' at')}
+</td>
+
                                 </tr>
                             );
                         })

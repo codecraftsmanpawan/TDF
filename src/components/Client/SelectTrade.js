@@ -6,15 +6,19 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChartLine, faGavel, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
 import TopNavbar from './TopNavbar';
 import BottomNav from './BottomNav';
+import Sidebar from './SideBar';
 
 const StockSelector = () => {
-    const [options, setOptions] = useState([]);
+    const [options, setOptions] = useState([]); 
+    const [isToggled, setIsToggled] = useState(false);
     const [selectedInstrument, setSelectedInstrument] = useState('');
     const [stockData, setStockData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const navigate = useNavigate();
-
+    const toggleView = () => {
+        setIsToggled(!isToggled);
+    };
     // Function to get token and decode it
     const getDecodedToken = () => {
         const token = localStorage.getItem('StocksUsertoken');  
@@ -107,7 +111,9 @@ const StockSelector = () => {
 
     return (
         <>
-            <TopNavbar />
+          <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
+            <TopNavbar toggleSidebar={toggleView} />
+            <Sidebar isOpen={isToggled} closeSidebar={toggleView} />
             <div className="p-6 max-w-2xl mx-auto bg-blue-50 min-h-screen">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
@@ -200,6 +206,7 @@ const StockSelector = () => {
                 )}
             </div>
             <BottomNav />
+             </div>
         </>
     );
 };

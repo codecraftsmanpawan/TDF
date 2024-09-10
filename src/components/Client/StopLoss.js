@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { FaMinus, FaPlus } from 'react-icons/fa';
 import {jwtDecode} from 'jwt-decode';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import TopNavbar from './TopNavbar';
 import BottomNav from './BottomNav';
 
@@ -32,8 +34,8 @@ const StopLossScreen = () => {
 
         fetchStockData();
 
-        // Set up polling every second
-        const intervalId = setInterval(fetchStockData, 1000);
+        // Set up polling every 10 seconds
+        const intervalId = setInterval(fetchStockData, 10000);
 
         // Clean up interval on component unmount
         return () => clearInterval(intervalId);
@@ -93,6 +95,7 @@ const StopLossScreen = () => {
                         lotSize={QuotationLot} 
                         instrumentId={instrumentId} 
                         tradeId={tradeId}  // Pass tradeId as prop
+                        exchange={Exchange} // Pass exchange as prop
                     />
                 </div>
             </div>
@@ -101,12 +104,15 @@ const StopLossScreen = () => {
             <div className="fixed bottom-0 left-0 right-0 z-50 bg-white shadow-md">
                 <BottomNav/>
             </div>
+
+            {/* Toast Container */}
+            <ToastContainer />
         </>
     );
 };
 
 // BuySellPage Component
-const BuySellPage = ({ buyPrice, sellPrice, lotSize, instrumentId, tradeId }) => {
+const BuySellPage = ({ buyPrice, sellPrice, lotSize, instrumentId, tradeId, exchange }) => {
     const [quantity, setQuantity] = useState(0);
     const [inputPrice, setInputPrice] = useState('');
 
@@ -132,54 +138,57 @@ const BuySellPage = ({ buyPrice, sellPrice, lotSize, instrumentId, tradeId }) =>
 
     const determineButtonAction = () => {
         const price = parseFloat(inputPrice);
-        if (price >= buyPrice) {
+        if (price <= buyPrice) {
             return 'SELL';
-        } else if (price <= sellPrice) {
+        } else if (price >= sellPrice) {
             return 'BUY';
         } else {
             return 'Invalid';
         }
     };
 
-   const handleBidSubmit = async () => {
-    const action = determineButtonAction().toLowerCase();
-    const price = action === 'buy' ? buyPrice : action === 'sell' ? sellPrice : 0;
+    const handleStopLossSubmit = async () => {
+        const action = determineButtonAction().toLowerCase();
+        const price = action === 'buy' ? buyPrice : action === 'sell' ? sellPrice : 0;
 
-    if (action === 'invalid') {
-        console.log('Invalid price');
-        return;
-    }
+        if (action === 'invalid') {
+            toast.error('Invalid price');
+            return;
+        }
 
-    if (quantity <= 0 || isNaN(quantity)) {
-        console.log('Invalid quantity');
-        return;
-    }
+        if (quantity <= 0 || isNaN(quantity)) {
+            toast.error('Invalid quantity');
+            return;
+        }
 
-    const token = localStorage.getItem('StocksUsertoken');
-    const decodedToken = jwtDecode(token);
-    const userId = decodedToken.id;
+        const token = localStorage.getItem('StocksUsertoken');
+        const decodedToken = jwtDecode(token);
+        const userId = decodedToken.id;
 
-    try {
-        const response = await axios.post('http://localhost:5000/api/var/client/add/stoploss', {
-            userId: userId,
-            instrumentIdentifier: instrumentId,
-            stopPrice: inputPrice,
-            quantity: quantity,
-            tradeType: action,
-            tradeId: tradeId  // Include tradeId in the payload
-        }, {
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`
-            }
-        });
+        try {
+            const response = await axios.post('http://localhost:5000/api/var/client/add/stoploss', {
+                userId: userId,
+                instrumentIdentifier: instrumentId,
+                stopPrice: inputPrice,
+                quantity: quantity,
+                tradeType: action,
+                tradeId: tradeId  
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
+            });
 
-        console.log('Bid submitted successfully:', response.data);
-        // Clear form or handle success here
-    } catch (error) {
-        console.error('Error submitting bid:', error.response ? error.response.data : error.message);
-    }
-};
+            toast.success('StopLoss submitted successfully!');
+            // Clear form or handle success here
+            setQuantity(0);
+            setInputPrice('');
+        } catch (error) {
+            console.error('Error submitting StopLoss:', error.response ? error.response.data : error.message);
+            toast.error('Error submitting StopLoss');
+        }
+    };
 
     const buttonAction = determineButtonAction();
 
@@ -201,11 +210,12 @@ const BuySellPage = ({ buyPrice, sellPrice, lotSize, instrumentId, tradeId }) =>
                             placeholder="Quantity"
                             value={quantity}
                             onChange={handleQuantityChange}
+                            readOnly
                         />
                     </div>
-  
+
                     <div className="flex justify-between mb-4">
-                        <span className="text-gray-600">Bid Price</span>
+                        <span className="text-gray-600">StopLoss Price</span>
                         <span className="text-gray-600">INR</span>
                     </div>
                     <div className="flex items-center mb-4">
@@ -219,53 +229,75 @@ const BuySellPage = ({ buyPrice, sellPrice, lotSize, instrumentId, tradeId }) =>
                     </div>
 
                     <div className="flex justify-around mb-6 gap-2">
-                        <button
-                            aria-label="Decrease 25%"
-                            className="flex items-center space-x-2 text-blue-900 bg-red-600 p-1 rounded-full"
-                            onClick={() => handleDecreasePercentageClick(25)}
-                        >
-                            <FaMinus className="text-white" />
-                        </button>
-                        <span>25%</span>
-                        <button
-                            aria-label="Increase 25%"
-                            className="flex items-center space-x-2 text-blue-900 bg-green-600 p-1 rounded-full"
-                            onClick={() => handlePercentageClick(25)}
-                        >
-                            <FaPlus className="text-white" />
-                        </button>
+                        {exchange === 'MCX' ? (
+                            <>
+                                <button
+                                    aria-label="Decrease 100%"
+                                    className="flex items-center space-x-2 text-blue-900 bg-red-600 p-1 rounded-full"
+                                    onClick={() => handleDecreasePercentageClick(100)}
+                                >
+                                    <FaMinus className="text-white" />
+                                </button>
+                                <span>100%</span>
+                                <button
+                                    aria-label="Increase 100%"
+                                    className="flex items-center space-x-2 text-blue-900 bg-green-600 p-1 rounded-full"
+                                    onClick={() => handlePercentageClick(100)}
+                                >
+                                    <FaPlus className="text-white" />
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <button
+                                    aria-label="Decrease 25%"
+                                    className="flex items-center space-x-2 text-blue-900 bg-red-600 p-1 rounded-full"
+                                    onClick={() => handleDecreasePercentageClick(25)}
+                                >
+                                    <FaMinus className="text-white" />
+                                </button>
+                                <span>25%</span>
+                                <button
+                                    aria-label="Increase 25%"
+                                    className="flex items-center space-x-2 text-blue-900 bg-green-600 p-1 rounded-full"
+                                    onClick={() => handlePercentageClick(25)}
+                                >
+                                    <FaPlus className="text-white" />
+                                </button>
 
-                        <button
-                            aria-label="Decrease 50%"
-                            className="flex items-center space-x-2 text-blue-900 bg-red-600 p-1 rounded-full"
-                            onClick={() => handleDecreasePercentageClick(50)}
-                        >
-                            <FaMinus className="text-white" />
-                        </button>
-                        <span>50%</span>
-                        <button
-                            aria-label="Increase 50%"
-                            className="flex items-center space-x-2 text-blue-900 bg-green-600 p-1 rounded-full"
-                            onClick={() => handlePercentageClick(50)}
-                        >
-                            <FaPlus className="text-white" />
-                        </button>
-
-                        <button
-                            aria-label="Decrease 100%"
-                            className="flex items-center space-x-2 text-blue-900 bg-red-600 p-1 rounded-full"
-                            onClick={() => handleDecreasePercentageClick(100)}
-                        >
-                            <FaMinus className="text-white" />
-                        </button>
-                        <span>100%</span>
-                        <button
-                            aria-label="Increase 100%"
-                            className="flex items-center space-x-2 text-blue-900 bg-green-600 p-1 rounded-full"
-                            onClick={() => handlePercentageClick(100)}
-                        >
-                            <FaPlus className="text-white" />
-                        </button>
+                                <button
+                                    aria-label="Decrease 50%"
+                                    className="flex items-center space-x-2 text-blue-900 bg-red-600 p-1 rounded-full"
+                                    onClick={() => handleDecreasePercentageClick(50)}
+                                >
+                                    <FaMinus className="text-white" />
+                                </button>
+                                <span>50%</span>
+                                <button
+                                    aria-label="Increase 50%"
+                                    className="flex items-center space-x-2 text-blue-900 bg-green-600 p-1 rounded-full"
+                                    onClick={() => handlePercentageClick(50)}
+                                >
+                                    <FaPlus className="text-white" />
+                                </button>
+                                
+                                <button
+                                    aria-label="Decrease 100%"
+                                    className="flex items-center space-x-2 text-blue-900 bg-red-600 p-1 rounded-full"
+                                    onClick={() => handleDecreasePercentageClick(100)}
+                                >
+                                    <FaMinus className="text-white" />
+                                </button>
+                                <span>100%</span>
+                                <button
+                                    aria-label="Increase 100%"
+                                    className="flex items-center space-x-2 text-blue-900 bg-green-600 p-1 rounded-full"
+                                    onClick={() => handlePercentageClick(100)}
+                                >
+                                    <FaPlus className="text-white" />
+                                </button>
+                            </>
+                        )}
                     </div>
 
                     <button
@@ -276,7 +308,7 @@ const BuySellPage = ({ buyPrice, sellPrice, lotSize, instrumentId, tradeId }) =>
                                 ? 'bg-red-500 text-white'
                                 : 'bg-gray-400 text-white'
                         }`}
-                        onClick={handleBidSubmit}
+                        onClick={handleStopLossSubmit}
                         disabled={buttonAction === 'Invalid'}
                     >
                         {buttonAction === 'BUY' ? 'BUY' : buttonAction === 'SELL' ? 'SELL' : 'Invalid Price'}

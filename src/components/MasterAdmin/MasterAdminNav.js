@@ -22,6 +22,12 @@ const Navbar = () => {
           Add New ClientID
         </Link>
                 <Link
+          to="/masteradmin/weeklypnl"
+          className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300 mr-4"
+        >
+          Weekly P&L
+        </Link>
+                <Link
           to="/masteradmin/password"
           className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300 mr-4"
         >

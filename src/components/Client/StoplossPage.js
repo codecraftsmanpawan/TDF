@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import {jwtDecode} from 'jwt-decode'; // Corrected import
+import {jwtDecode} from 'jwt-decode';
 
 // Utility function to capitalize the first letter of each word
 const capitalizeFirstLetter = (str) => {
@@ -26,7 +26,7 @@ const Stoploss = () => {
                 if (!userId) return;
 
                 // Fetch stoplosses
-                const stoplossResponse = await axios.get(`http://localhost:5000/api/var/client/stoploss/66c21a70f3f1b61eb14e86c6`, {
+                const stoplossResponse = await axios.get(`http://localhost:5000/api/var/client/stoploss/${userId}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 setStoplosses(stoplossResponse.data.stoplosses);
@@ -58,8 +58,7 @@ const Stoploss = () => {
     }, [userId]);
 
     if (loading) return <p>Loading...</p>;
-    // if (error) return <p>Error fetching data: {error.message}</p>;
-
+  
     return (
         <div className="overflow-x-auto mt-4">
             <table className="min-w-full bg-white table-auto border-collapse">
@@ -68,10 +67,9 @@ const Stoploss = () => {
                         <th className="py-2 px-4">#</th>
                         <th className="py-2 px-4">Name</th>
                         <th className="py-2 px-4">Exchange</th>
-                        <th className="py-2 px-4">Close</th>
                         <th className="py-2 px-4">Buy</th>
                         <th className="py-2 px-4">Sell</th>
-                        <th className="py-2 px-4">Stop Price</th>
+                        <th className="py-2 px-4">Stoploss Price</th>
                         <th className="py-2 px-4">Quantity</th>
                         <th className="py-2 px-4">Trade Type</th>
                         <th className="py-2 px-4">Status</th>
@@ -85,23 +83,41 @@ const Stoploss = () => {
                             const stock = stockData[stoploss.instrumentIdentifier] || {};
                             const tradeType = capitalizeFirstLetter(stoploss.tradeType);
                             const backgroundColor = tradeType === 'Sell' ? 'bg-red-200' : 'bg-green-200';
-                            const priceToDisplay = tradeType === 'Sell' ? stoploss.stopPrice : stoploss.stopPrice;
-                            const priceColor = tradeType === 'Sell' ? 'text-red-500' : 'text-green-500';
+        
 
                             return (
                                 <tr key={stoploss._id} className={`${index % 2 === 0 ? 'bg-white' : 'bg-blue-100'} ${backgroundColor} text-center`}>
                                     <td className="py-2 px-4 border-b">{index + 1}</td>
                                     <td className="py-2 px-4 border-b">{stock.name || 'N/A'}</td>
                                     <td className="py-2 px-4 border-b">{stock.Exchange || 'N/A'}</td>
-                                    <td className="py-2 px-4 border-b">{stock.Close ? `₹${stock.Close}` : 'N/A'}</td>
                                     <td className="py-2 px-4 border-b">{stock.BuyPrice ? `₹${stock.BuyPrice}` : 'N/A'}</td>
                                     <td className="py-2 px-4 border-b">{stock.SellPrice ? `₹${stock.SellPrice}` : 'N/A'}</td>
-                                    <td className={`py-2 px-4 border-b ${priceColor}`}>{priceToDisplay ? `₹${priceToDisplay}` : 'N/A'}</td>
+                                    <td className="py-2 px-4 border-b">{stoploss.stopPrice}</td>
                                     <td className="py-2 px-4 border-b">{stoploss.quantity}</td>
                                     <td className="py-2 px-4 border-b">{tradeType}</td>
                                     <td className="py-2 px-4 border-b">{capitalizeFirstLetter(stoploss.status)}</td>
-                                    <td className="py-2 px-4 border-b">{new Date(stoploss.createdAt).toLocaleString()}</td>
-                                    <td className="py-2 px-4 border-b">{new Date(stoploss.updatedAt).toLocaleString()}</td>
+                                    <td className="py-2 px-4 border-b">
+                                        {new Date(stoploss.createdAt).toLocaleString('en-GB', {
+                                            day: '2-digit',
+                                            month: 'long',
+                                            year: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            second: '2-digit',
+                                            hour12: true
+                                        }).replace(',', ' at')}
+                                    </td>
+                                    <td className="py-2 px-4 border-b">
+                                        {new Date(stoploss.updatedAt).toLocaleString('en-GB', {
+                                            day: '2-digit',
+                                            month: 'long',
+                                            year: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            second: '2-digit',
+                                            hour12: true
+                                        }).replace(',', ' at')}
+                                    </td>
                                 </tr>
                             );
                         })
