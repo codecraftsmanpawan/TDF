@@ -186,18 +186,29 @@ const BuySellPage = ({ buyPrice, sellPrice, lotSize, exchange, instrumentIdentif
     //     }
     // };
 
-    const handleTrade = async () => {
+const handleTrade = async () => {
     const tradeType = isBuy ? 'buy' : 'sell';
-    
+
     // Get current time in India/Kolkata timezone
     const indiaTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
     const currentTime = new Date(indiaTime);
 
-    // Define trading hours for NSE (11:30 AM to 3:30 PM)
-    const startHour = 11;
-    const startMinute = 30;
-    const endHour = 15;
-    const endMinute = 30;
+    let startHour, startMinute, endHour, endMinute;
+
+    // Set trading hours based on the exchange
+    if (exchange.toUpperCase() === 'NSE') {
+        // NSE trading hours (9:15 AM to 3:30 PM)
+        startHour = 9;
+        startMinute = 15;
+        endHour = 15;
+        endMinute = 30;
+    } else if (exchange.toUpperCase() === 'MCX') {
+        // MCX trading hours (9:00 AM to 11:30 PM)
+        startHour = 9;
+        startMinute = 0;
+        endHour = 23;
+        endMinute = 30;
+    }
 
     const startTime = new Date(currentTime);
     startTime.setHours(startHour, startMinute, 0, 0);
@@ -205,12 +216,10 @@ const BuySellPage = ({ buyPrice, sellPrice, lotSize, exchange, instrumentIdentif
     const endTime = new Date(currentTime);
     endTime.setHours(endHour, endMinute, 0, 0);
 
-    // Check if the exchange is NSE and the time is outside of trading hours
-    if (exchange.toUpperCase() === 'NSE') {
-        if (currentTime < startTime || currentTime > endTime) {
-            toast.error('Trading on NSE is only allowed between 11:30 AM and 3:30 PM.');
-            return;
-        }
+    // Check if the current time is outside of trading hours
+    if (currentTime < startTime || currentTime > endTime) {
+        toast.error(`Trading on ${exchange.toUpperCase()} is only allowed between ${startHour}:${startMinute < 10 ? '0' + startMinute : startMinute} AM and ${endHour}:${endMinute < 10 ? '0' + endMinute : endMinute} PM.`);
+        return;
     }
 
     const data = {
@@ -235,6 +244,7 @@ const BuySellPage = ({ buyPrice, sellPrice, lotSize, exchange, instrumentIdentif
         toast.error('Error making trade');
     }
 };
+
 
 
     const isMCX = exchange.toUpperCase() === 'MCX';

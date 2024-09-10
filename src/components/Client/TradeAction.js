@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-import {jwtDecode} from 'jwt-decode'; // Import jwt-decode
+import {jwtDecode} from 'jwt-decode'; 
 import { FaMinus, FaPlus } from 'react-icons/fa'; 
 import TopNavbar from './TopNavbar';
 import BottomNav from './BottomNav';
