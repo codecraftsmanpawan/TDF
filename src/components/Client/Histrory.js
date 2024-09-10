@@ -26,7 +26,7 @@ const TradeHistory = () => {
         const config = {
           method: 'get',
           maxBodyLength: Infinity,
-          url: `http://localhost:5000/api/var/client/trades/client/brokerage/${clientId}`,
+          url: `http://16.16.64.168:5000/api/var/client/trades/client/brokerage/${clientId}`,
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -40,7 +40,7 @@ const TradeHistory = () => {
             const lotConfig = {
               method: 'get',
               maxBodyLength: Infinity,
-              url: `http://localhost:5000/api/var/client/stocks/${trade.instrumentIdentifier}`,
+              url: `http://16.16.64.168:5000/api/var/client/stocks/${trade.instrumentIdentifier}`,
               headers: {
                 'Authorization': `Bearer ${token}`,
               },

@@ -33,7 +33,7 @@ const Login = () => {
       redirect: "follow"
     };
 
-    fetch("http://localhost:5000/api/var/client/clientLogin", requestOptions)
+    fetch("http://16.16.64.168:5000/api/var/client/clientLogin", requestOptions)
       .then((response) => {
         if (response.status === 401) {
           throw new Error("Invalid username or password");

@@ -29,7 +29,7 @@ const ClientDetails = () => {
       const config = {
         method: 'get',
         maxBodyLength: Infinity,
-        url: `http://localhost:5000/api/var/masterAdmin/getClient/${id}`,
+        url: `http://16.16.64.168:5000/api/var/masterAdmin/getClient/${id}`,
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -52,7 +52,7 @@ const ClientDetails = () => {
       const config = {
         method: 'get',
         maxBodyLength: Infinity,
-        url: `http://localhost:5000/api/var/client/trades/client/brokerage/${id}`,
+        url: `http://16.16.64.168:5000/api/var/client/trades/client/brokerage/${id}`,
         headers: {
           'Authorization': `Bearer ${token}`,
         },

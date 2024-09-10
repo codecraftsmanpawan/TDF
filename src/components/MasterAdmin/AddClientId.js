@@ -53,7 +53,7 @@ const handleSubmit = async (e) => {
 
     const config = {
         method: 'post',
-        url: 'http://localhost:5000/api/var/masterAdmin/add-client',
+        url: 'http://16.16.64.168:5000/api/var/masterAdmin/add-client',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`

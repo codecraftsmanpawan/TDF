@@ -14,7 +14,7 @@ const StockDetailPage = () => {
     // Function to fetch stock details
     const fetchStockDetails = async () => {
         try {
-            const response = await axios.get(`http://localhost:5000/api/var/client/stocks/${instrumentId}`, {
+            const response = await axios.get(`http://16.16.64.168:5000/api/var/client/stocks/${instrumentId}`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('StocksUsertoken')}`,
                 },

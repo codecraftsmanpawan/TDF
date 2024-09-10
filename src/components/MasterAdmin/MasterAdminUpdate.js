@@ -18,7 +18,7 @@ const UpdatePage = () => {
       try {
         const token = localStorage.getItem('masterAdminToken');
 
-        const response = await axios.get(`http://localhost:5000/api/var/masterAdmin/getClient/${id}`, {
+        const response = await axios.get(`http://16.16.64.168:5000/api/var/masterAdmin/getClient/${id}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -53,7 +53,7 @@ const UpdatePage = () => {
     try {
       const token = localStorage.getItem('masterAdminToken');
 
-      const response = await axios.put(`http://localhost:5000/api/var/masterAdmin/update-client/${id}`, {
+      const response = await axios.put(`http://16.16.64.168:5000/api/var/masterAdmin/update-client/${id}`, {
         mcx_brokerage_type: client.mcx_brokerage_type,
         mcx_brokerage: client.mcx_brokerage,
         share_brokerage: client.share_brokerage
@@ -92,7 +92,7 @@ const UpdatePage = () => {
         }
       }
 
-      const response = await axios.put(`http://localhost:5000/api/var/masterAdmin/update-client/${id}`, {
+      const response = await axios.put(`http://16.16.64.168:5000/api/var/masterAdmin/update-client/${id}`, {
         budget: updatedBudget
       }, {
         headers: {

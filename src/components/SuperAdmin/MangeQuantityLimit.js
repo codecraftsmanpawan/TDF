@@ -50,7 +50,7 @@ const DataTable = () => {
         }
 
         // Fetch items data
-        const itemsResponse = await axios.get('http://localhost:5000/api/var/superAdmin/items', {
+        const itemsResponse = await axios.get('http://16.16.64.168:5000/api/var/superAdmin/items', {
           headers: {
             'Authorization': `Bearer ${storedToken}`
           }
@@ -58,7 +58,7 @@ const DataTable = () => {
         setData(itemsResponse.data);
 
         // Fetch overall limit data
-        const overallLimitResponse = await axios.get('http://localhost:5000/api/var/superAdmin/overall-limit', {
+        const overallLimitResponse = await axios.get('http://16.16.64.168:5000/api/var/superAdmin/overall-limit', {
           headers: {
             'Authorization': `Bearer ${storedToken}`
           }
@@ -90,7 +90,7 @@ const DataTable = () => {
         throw new Error('No token found');
       }
 
-      await axios.delete(`http://localhost:5000/api/var/superAdmin/items/${itemToDelete.symbol}`, {
+      await axios.delete(`http://16.16.64.168:5000/api/var/superAdmin/items/${itemToDelete.symbol}`, {
         headers: {
           'Authorization': `Bearer ${storedToken}`
         }

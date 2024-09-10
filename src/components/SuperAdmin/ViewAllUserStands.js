@@ -13,7 +13,7 @@ const MasterAdminsTableCard = () => {
     const fetchMasterAdmins = async () => {
       try {
         const token = localStorage.getItem('superAdminToken');
-        const response = await axios.get('http://localhost:5000/api/var/superAdmin/getAllMasterAdmin', {
+        const response = await axios.get('http://16.16.64.168:5000/api/var/superAdmin/getAllMasterAdmin', {
           headers: {
             'Authorization': `Bearer ${token}`
           }

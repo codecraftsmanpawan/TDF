@@ -51,7 +51,7 @@ const ClientCard = () => {
     const fetchClientData = async () => {
       try {
         const token = getToken();
-        const response = await axios.get(`http://localhost:5000/api/var/superAdmin/getClientById/${id}`, {
+        const response = await axios.get(`http://16.16.64.168:5000/api/var/superAdmin/getClientById/${id}`, {
           headers: { 
             'Authorization': `Bearer ${token}`
           }
@@ -66,7 +66,7 @@ const ClientCard = () => {
     const fetchTradesData = async () => {
       try {
         const token = getToken();
-        const response = await axios.get(`http://localhost:5000/api/var/client/trades/${id}`, {
+        const response = await axios.get(`http://16.16.64.168:5000/api/var/client/trades/${id}`, {
           headers: { 
             'Authorization': `Bearer ${token}`
           }
@@ -88,7 +88,7 @@ const ClientCard = () => {
     const fetchRealTimeData = async (instrumentIdentifier) => {
       try {
         const token = getToken();
-        const response = await axios.get(`http://localhost:5000/api/var/client/stocks/${instrumentIdentifier}`, {
+        const response = await axios.get(`http://16.16.64.168:5000/api/var/client/stocks/${instrumentIdentifier}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -106,7 +106,7 @@ const ClientCard = () => {
     const fetchTradeHistory = async () => {
       try {
         const token = getToken();
-        const response = await axios.get(`http://localhost:5000/api/var/client/trades/client/brokerage/${id}`, {
+        const response = await axios.get(`http://16.16.64.168:5000/api/var/client/trades/client/brokerage/${id}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -139,7 +139,7 @@ const ClientCard = () => {
     if (confirmed) {
       try {
         const token = getToken();
-        await axios.delete(`http://localhost:5000/api/var/client/trades/${tradeId}`, {
+        await axios.delete(`http://16.16.64.168:5000/api/var/client/trades/${tradeId}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

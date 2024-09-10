@@ -33,7 +33,7 @@ function TradeDetailPage() {
           throw new Error('User ID could not be extracted from the token.');
         }
 
-        const response = await axios.get(`http://localhost:5000/api/var/client/trades/details/${instrumentIdentifier}`, {
+        const response = await axios.get(`http://16.16.64.168:5000/api/var/client/trades/details/${instrumentIdentifier}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           },

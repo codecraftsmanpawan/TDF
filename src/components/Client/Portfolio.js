@@ -35,7 +35,7 @@ const StockPortfolio = () => {
             try {
                 const userId = getUserIdFromToken();
                 if (userId) {
-                    const response = await axios.get(`http://localhost:5000/api/var/client/trades/net-quantity/${userId}`, {
+                    const response = await axios.get(`http://16.16.64.168:5000/api/var/client/trades/net-quantity/${userId}`, {
                         headers: {
                             'Authorization': `Bearer ${getToken()}`
                         }
@@ -72,7 +72,7 @@ const StockPortfolio = () => {
     const fetchRealTimeData = async (instrumentIdentifier) => {
         try {
             const token = getToken();
-            const response = await axios.get(`http://localhost:5000/api/var/client/stocks/${instrumentIdentifier}`, {
+            const response = await axios.get(`http://16.16.64.168:5000/api/var/client/stocks/${instrumentIdentifier}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -153,7 +153,7 @@ const StockPortfolio = () => {
                 const config = {
                     method: 'patch',
                     maxBodyLength: Infinity,
-                    url: `http://localhost:5000/api/var/client/updateProfitLoss/${userId}`,
+                    url: `http://16.16.64.168:5000/api/var/client/updateProfitLoss/${userId}`,
                     headers: { 
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`

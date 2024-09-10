@@ -30,7 +30,7 @@ function SuperAdminLogin() {
     };
 
     try {
-      const response = await fetch("http://localhost:5000/api/var/superAdmin/superAdminLogin", requestOptions);
+      const response = await fetch("http://16.16.64.168:5000/api/var/superAdmin/superAdminLogin", requestOptions);
       const result = await response.json();
 
       if (response.ok) {

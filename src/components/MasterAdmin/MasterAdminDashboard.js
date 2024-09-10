@@ -40,7 +40,7 @@ const MasterAdminDashboard = () => {
         const masterAdminId = decodedToken.id;
 
         const response = await fetch(
-          `http://localhost:5000/api/var/masterAdmin/clients/${masterAdminId}`, 
+          `http://16.16.64.168:5000/api/var/masterAdmin/clients/${masterAdminId}`, 
           {
             method: "GET",
             headers: {
@@ -111,7 +111,7 @@ const MasterAdminDashboard = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/var/masterAdmin/update-client/${selectedClient._id}`,
+        `http://16.16.64.168:5000/api/var/masterAdmin/update-client/${selectedClient._id}`,
         {
           method: "PUT",
           headers: {
@@ -152,7 +152,7 @@ const MasterAdminDashboard = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/var/masterAdmin/delete-client/${selectedClient._id}`,
+        `http://16.16.64.168:5000/api/var/masterAdmin/delete-client/${selectedClient._id}`,
         {
           method: "DELETE",
           headers: {

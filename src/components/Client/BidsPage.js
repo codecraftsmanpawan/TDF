@@ -25,7 +25,7 @@ const Bids = () => {
                 setUserId(decodedToken.id);
 
                 // Fetch bids
-                const bidsResponse = await axios.get(`http://localhost:5000/api/var/client/bids/${decodedToken.id}`, {
+                const bidsResponse = await axios.get(`http://16.16.64.168:5000/api/var/client/bids/${decodedToken.id}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const fetchedBids = bidsResponse.data.bids;
@@ -34,7 +34,7 @@ const Bids = () => {
                 // Fetch stock data
                 const instrumentIdentifiers = fetchedBids.map(bid => bid.instrumentIdentifier);
                 const stockPromises = instrumentIdentifiers.map(id =>
-                    axios.get(`http://localhost:5000/api/var/client/stocks/${id}`, {
+                    axios.get(`http://16.16.64.168:5000/api/var/client/stocks/${id}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     })
                 );

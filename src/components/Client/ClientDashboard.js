@@ -81,7 +81,7 @@ const ClientDashboard = () => {
                 return;
             }
 
-            const wishlistResponse = await axios.get(`http://localhost:5000/api/var/client/wishlist/${userId}`, {
+            const wishlistResponse = await axios.get(`http://16.16.64.168:5000/api/var/client/wishlist/${userId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -94,7 +94,7 @@ const ClientDashboard = () => {
             }
 
             const stockPromises = wishlistResponse.data.items.map(item =>
-                axios.get(`http://localhost:5000/api/var/client/stocks/${item.instrumentIdentifier}`, {
+                axios.get(`http://16.16.64.168:5000/api/var/client/stocks/${item.instrumentIdentifier}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }

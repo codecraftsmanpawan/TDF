@@ -38,7 +38,7 @@ const StockSearch = () => {
           return;
         }
 
-        const wishlistResponse = await axios.get(`http://localhost:5000/api/var/client/wishlist/${userId}`, {
+        const wishlistResponse = await axios.get(`http://16.16.64.168:5000/api/var/client/wishlist/${userId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -63,7 +63,7 @@ const StockSearch = () => {
     if (searchTerm.trim()) {
       setLoading(true);
       axios
-        .get('http://localhost:5000/api/var/client/stocks/search', {
+        .get('http://16.16.64.168:5000/api/var/client/stocks/search', {
           params: { name: searchTerm },
           headers: {
             Authorization: `Bearer ${localStorage.getItem('StocksUsertoken')}`,
@@ -92,7 +92,7 @@ const StockSearch = () => {
 
     axios
       .post(
-        'http://localhost:5000/api/var/client/wishlist/add',
+        'http://16.16.64.168:5000/api/var/client/wishlist/add',
         {
           userId,
           item: {
@@ -132,7 +132,7 @@ const StockSearch = () => {
     console.log('Removing item with ID:', itemId, 'for user:', userId);
 
     axios
-      .delete(`http://localhost:5000/api/var/client/wishlist/remove/${userId}/${itemId}`, {
+      .delete(`http://16.16.64.168:5000/api/var/client/wishlist/remove/${userId}/${itemId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

@@ -18,7 +18,7 @@ function MasterAdminLogin() {
     }
 
     try {
-      const response = await axios.post("http://localhost:5000/api/var/masterAdmin/masterAdminLogin", { username, password }, {
+      const response = await axios.post("http://16.16.64.168:5000/api/var/masterAdmin/masterAdminLogin", { username, password }, {
         headers: {
           "Content-Type": "application/json"
         }

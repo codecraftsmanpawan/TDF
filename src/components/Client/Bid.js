@@ -18,7 +18,7 @@ const BidScreen = () => {
     useEffect(() => {
         const fetchStockData = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/api/var/client/stocks/${instrumentId}`, {
+                const response = await axios.get(`http://16.16.64.168:5000/api/var/client/stocks/${instrumentId}`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('StocksUsertoken')}`,
                     },
@@ -166,7 +166,7 @@ const BuySellPage = ({ buyPrice, sellPrice, lotSize, instrumentId, tradeId, exch
         const userId = decodedToken.id;
 
         try {
-            const response = await axios.post('http://localhost:5000/api/var/client/add/bid', {
+            const response = await axios.post('http://16.16.64.168:5000/api/var/client/add/bid', {
                 userId: userId,
                 instrumentIdentifier: instrumentId,
                 bidPrice: inputPrice,

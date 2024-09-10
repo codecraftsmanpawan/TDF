@@ -28,7 +28,7 @@ const MasterAdminDetails = () => {
         const config = {
           method: 'get',
           maxBodyLength: Infinity,
-          url: `http://localhost:5000/api/var/superAdmin/getMasterAdmin/${id}`,
+          url: `http://16.16.64.168:5000/api/var/superAdmin/getMasterAdmin/${id}`,
           headers: { 
             'Authorization': `Bearer ${token}` 
           }
@@ -100,7 +100,7 @@ const MasterAdminDetails = () => {
         const token = localStorage.getItem('superAdminToken');
         const config = {
           method: 'put',
-          url: `http://localhost:5000/api/var/superAdmin/update-masterAdmin/${id}`,
+          url: `http://16.16.64.168:5000/api/var/superAdmin/update-masterAdmin/${id}`,
           headers: { 
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -137,7 +137,7 @@ const MasterAdminDetails = () => {
         const token = localStorage.getItem('superAdminToken');
         const config = {
           method: 'put',
-          url: `http://localhost:5000/api/var/superAdmin/update-masterAdmin/${id}`,
+          url: `http://16.16.64.168:5000/api/var/superAdmin/update-masterAdmin/${id}`,
           headers: { 
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',

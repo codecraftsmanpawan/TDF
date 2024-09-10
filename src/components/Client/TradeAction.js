@@ -46,7 +46,7 @@ const navigate = useNavigate();
       const config = {
         method: 'get',
         maxBodyLength: Infinity,
-        url: `http://localhost:5000/api/var/client/instrument/${instrumentIdentifier}/trades/?userId=${userId}`,
+        url: `http://16.16.64.168:5000/api/var/client/instrument/${instrumentIdentifier}/trades/?userId=${userId}`,
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -82,7 +82,7 @@ const navigate = useNavigate();
       const stockConfig = {
         method: 'get',
         maxBodyLength: Infinity,
-        url: `http://localhost:5000/api/var/client/stocks/${instrumentIdentifier}`,
+        url: `http://16.16.64.168:5000/api/var/client/stocks/${instrumentIdentifier}`,
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -139,7 +139,7 @@ const navigate = useNavigate();
     const config = {
       method: 'post',
       maxBodyLength: Infinity,
-      url: 'http://localhost:5000/api/var/client/trades', 
+      url: 'http://16.16.64.168:5000/api/var/client/trades', 
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'

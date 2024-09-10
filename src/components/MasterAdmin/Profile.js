@@ -20,7 +20,7 @@ const MasterAdminDetails = () => {
         const masterAdminId = decodedToken.id; // Adjust according to your token structure
 
         // Fetch data using the masterAdmin ID
-        const response = await axios.get(`http://localhost:5000/api/var/masterAdmin/masteradmin/${masterAdminId}`, {
+        const response = await axios.get(`http://16.16.64.168:5000/api/var/masterAdmin/masteradmin/${masterAdminId}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

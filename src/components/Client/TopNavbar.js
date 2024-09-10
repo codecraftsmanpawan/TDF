@@ -20,7 +20,7 @@ const TopNavbar = ({ toggleSidebar }) => {
             const userId = decodedToken.id; 
 
             // Fetch the budget using the user ID
-            const response = await axios.get(`http://localhost:5000/api/var/client/clients/${userId}/availableBudget`, {
+            const response = await axios.get(`http://16.16.64.168:5000/api/var/client/clients/${userId}/availableBudget`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

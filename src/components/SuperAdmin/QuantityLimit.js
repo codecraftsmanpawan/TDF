@@ -25,7 +25,7 @@ const StockForm = () => {
     const config = {
       method: 'post',
       maxBodyLength: Infinity,
-      url: 'http://localhost:5000/api/var/superAdmin/items',
+      url: 'http://16.16.64.168:5000/api/var/superAdmin/items',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,

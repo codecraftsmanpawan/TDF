@@ -28,7 +28,7 @@ const MasterAdminView = () => {
       redirect: "follow"
     };
 
-    fetch(`http://localhost:5000/api/var/superAdmin/getMasterAdmin/${masterCode}`, requestOptions)
+    fetch(`http://16.16.64.168:5000/api/var/superAdmin/getMasterAdmin/${masterCode}`, requestOptions)
       .then((response) => {
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -81,7 +81,7 @@ const MasterAdminView = () => {
 
       try {
         await axios.put(
-          `http://localhost:5000/api/var/superAdmin/clients/${selectedClient._id}/status`,
+          `http://16.16.64.168:5000/api/var/superAdmin/clients/${selectedClient._id}/status`,
           data,
           {
             headers: {

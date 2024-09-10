@@ -22,7 +22,7 @@ const TradeScreen = () => {
     useEffect(() => {
         const fetchStockData = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/api/var/client/stocks/${instrumentId}`, {
+                const response = await axios.get(`http://16.16.64.168:5000/api/var/client/stocks/${instrumentId}`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('StocksUsertoken')}`,
                     },
@@ -172,7 +172,7 @@ const BuySellPage = ({ buyPrice, sellPrice, lotSize, exchange, instrumentIdentif
     //     };
 
     //     try {
-    //         const response = await axios.post('http://localhost:5000/api/var/client/trades', data, {
+    //         const response = await axios.post('http://16.16.64.168:5000/api/var/client/trades', data, {
     //             headers: {
     //                 'Content-Type': 'application/json',
     //                 'Authorization': `Bearer ${localStorage.getItem('StocksUsertoken')}`,
@@ -224,7 +224,7 @@ const BuySellPage = ({ buyPrice, sellPrice, lotSize, exchange, instrumentIdentif
     };
 
     try {
-        const response = await axios.post('http://localhost:5000/api/var/client/trades', data, {
+        const response = await axios.post('http://16.16.64.168:5000/api/var/client/trades', data, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('StocksUsertoken')}`,

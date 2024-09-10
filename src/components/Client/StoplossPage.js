@@ -26,7 +26,7 @@ const Stoploss = () => {
                 if (!userId) return;
 
                 // Fetch stoplosses
-                const stoplossResponse = await axios.get(`http://localhost:5000/api/var/client/stoploss/${userId}`, {
+                const stoplossResponse = await axios.get(`http://16.16.64.168:5000/api/var/client/stoploss/${userId}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 setStoplosses(stoplossResponse.data.stoplosses);
@@ -34,7 +34,7 @@ const Stoploss = () => {
                 // Fetch stock data
                 const instrumentIdentifiers = stoplossResponse.data.stoplosses.map(stoploss => stoploss.instrumentIdentifier);
                 const stockPromises = instrumentIdentifiers.map(id =>
-                    axios.get(`http://localhost:5000/api/var/client/stocks/${id}`, {
+                    axios.get(`http://16.16.64.168:5000/api/var/client/stocks/${id}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     })
                 );

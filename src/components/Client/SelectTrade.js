@@ -42,7 +42,7 @@ const StockSelector = () => {
         const fetchOptions = async () => {
             setLoading(true);
             try {
-                const response = await axios.get(`http://localhost:5000/api/var/client/wishlist/${userId}`, {
+                const response = await axios.get(`http://16.16.64.168:5000/api/var/client/wishlist/${userId}`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('StocksUsertoken')}`, // Use token from local storage
                     },
@@ -65,7 +65,7 @@ const StockSelector = () => {
             const fetchStockData = async () => {
                 setLoading(true);
                 try {
-                    const response = await axios.get(`http://localhost:5000/api/var/client/stocks/${selectedInstrument}`, {
+                    const response = await axios.get(`http://16.16.64.168:5000/api/var/client/stocks/${selectedInstrument}`, {
                         headers: {
                             Authorization: `Bearer ${localStorage.getItem('StocksUsertoken')}`, // Use token from local storage
                         },
