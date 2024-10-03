@@ -1,25 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faWallet } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faWallet, faBell } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
-import {jwtDecode} from 'jwt-decode'; 
+import { jwtDecode } from 'jwt-decode';
+import Spinner from './Spinner';
+import { useNavigate } from 'react-router-dom';
 
 const TopNavbar = ({ toggleSidebar }) => {
     const [budget, setBudget] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [notifications, setNotifications] = useState([]); 
+    const [userStatus, setUserStatus] = useState(null); 
+    const navigate = useNavigate();
 
     const fetchBudget = async () => {
         try {
-            // Retrieve the token from local storage
             const token = localStorage.getItem('StocksUsertoken');
             if (!token) throw new Error('No token found');
 
-            // Decode the token to get the user ID
             const decodedToken = jwtDecode(token);
-            const userId = decodedToken.id; 
+            const userId = decodedToken.id;
 
-            // Fetch the budget using the user ID
             const response = await axios.get(`http://16.16.64.168:5000/api/var/client/clients/${userId}/availableBudget`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -28,37 +30,116 @@ const TopNavbar = ({ toggleSidebar }) => {
 
             setBudget(response.data.totalProfitLossAmount);
         } catch (err) {
+            // Handle error if needed
             setError('Failed to fetch budget');
-            // console.error(err);
         } finally {
             setLoading(false);
         }
     };
 
-    useEffect(() => {
-        fetchBudget(); 
-        
-        const intervalId = setInterval(() => {
-            fetchBudget(); 
-        }, 1000);
+    const fetchNotifications = async () => {
+        try {
+            const response = await axios.get('http://16.16.64.168:5000/api/var/Wishlist/notifications');
+            setNotifications(response.data);
+        } catch (error) {
+            setError('Failed to fetch notifications');
+        }
+    };
 
-        return () => clearInterval(intervalId); // Cleanup on unmount
+    const fetchUserStatus = async () => {
+        try {
+            const token = localStorage.getItem('StocksUsertoken');
+            if (!token) throw new Error('No token found');
+
+            const decodedToken = jwtDecode(token);
+            const userId = decodedToken.id;
+
+            const config = {
+                method: 'get',
+                maxBodyLength: Infinity,
+                url: `http://16.16.64.168:5000/api/var/client/${userId}/status`,
+                headers: {
+                    'Authorization': `Bearer ${token}` 
+                }
+            };
+
+            const response = await axios.request(config);
+            setUserStatus(response.data.status); 
+        } catch (error) {
+            // console.log(error);
+            setError('Failed to fetch user status');
+        }
+    };
+
+    const fetchNotificationCount = () => {
+        return notifications.length; 
+    };
+
+    useEffect(() => {
+        fetchBudget();
+        fetchNotifications();
+        fetchUserStatus(); 
+
+        // Set interval to refresh user status every 5 seconds
+        const intervalId = setInterval(() => {
+            fetchUserStatus(); 
+        }, 5000); 
+
+        return () => clearInterval(intervalId); 
     }, []);
+
+    useEffect(() => {
+        // Set another interval to refresh budget and notifications every 10 seconds
+        const intervalId = setInterval(() => {
+            fetchBudget();
+            fetchNotifications(); 
+        }, 1000); 
+
+        return () => clearInterval(intervalId); 
+    }, []);
+
+    if (userStatus === "inactive") {
+        return (
+            <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
+                <div className="bg-white p-8 rounded shadow-lg text-center">
+                    <h2 className="text-2xl font-bold mb-4">Contact Admin</h2>
+                    <p className="text-lg">Your account is inactive. Please contact the admin for assistance.</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-blue-500 w-full py-4 px-6 flex justify-between items-center border-b-2 border-blue-700">
-            <button onClick={toggleSidebar} className="text-white hover:text-blue-100">
-                <FontAwesomeIcon icon={faBars} className="text-xl" />
-            </button>
+            <div className="flex items-center">
+                <button onClick={toggleSidebar} className="text-white hover:text-blue-100 mr-4">
+                    <FontAwesomeIcon icon={faBars} className="text-xl" />
+                </button>
+                
+                <h1 className="text-2xl font-bold tracking-wide mb-1">
+                    <span className="text-red-200">Minus</span><span className="text-green-200">Plus</span>
+                </h1>
+            </div>
+
             <div className="flex items-center text-lg font-semibold text-white">
                 <FontAwesomeIcon icon={faWallet} className="text-white mr-2" />
                 {loading ? (
-                    <span>Loading...</span>
+                    <Spinner />
                 ) : error ? (
-                    <span className="text-red-500">{error}</span>
+                    <span>₹{budget}</span>
                 ) : (
                     <span>₹{budget}</span>
                 )}
+
+                {/* Notification Icon with Count */}
+                <div className="relative ml-4" onClick={() => navigate('/notification')}>
+                    <FontAwesomeIcon icon={faBell} className="text-white text-xl cursor-pointer" />
+                    {fetchNotificationCount() > 0 && (
+                        <span className="absolute top-0 right-0 bg-red-600 text-white rounded-full px-1 text-xs">
+                            {fetchNotificationCount()} {/* Display notification count */}
+                        </span>
+                    )}
+                </div>
             </div>
         </div>
     );

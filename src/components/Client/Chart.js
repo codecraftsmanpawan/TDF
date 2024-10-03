@@ -16,7 +16,8 @@ import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft } from 'react-icons/fa';
 import TopNavbar from './TopNavbar';
 import BottomNav from './BottomNav';
-
+import Sidebar from './SideBar';
+import Spinner from './Spinner';  
 // Register ChartJS components
 ChartJS.register(
   CategoryScale,
@@ -32,7 +33,10 @@ function TradeChart() {
   const [chartData, setChartData] = useState([]);
   const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
-
+  const [isToggled, setIsToggled] = useState(false);
+    const toggleView = () => {
+        setIsToggled(!isToggled);
+    };
   useEffect(() => {
     const getToken = () => localStorage.getItem('StocksUsertoken');
     
@@ -122,7 +126,7 @@ function TradeChart() {
 
   const options = {
     responsive: true,
-    maintainAspectRatio: false, // Allow chart to fill container
+    maintainAspectRatio: false, 
     plugins: {
       legend: {
         position: 'top',
@@ -154,15 +158,9 @@ function TradeChart() {
   return (
     <div className="flex flex-col h-screen">
       {/* Top Navigation */}
-      <TopNavbar>
-        <button 
-          onClick={() => navigate(-1)} 
-          className="p-2 rounded bg-blue-600 hover:bg-blue-700 focus:outline-none"
-        >
-          <FaArrowLeft className="text-white" />
-        </button>
-      </TopNavbar>
-
+       <TopNavbar toggleSidebar={toggleView} />
+       <Sidebar isOpen={isToggled} closeSidebar={toggleView} />
+      
       {/* Main Content */}
       <div className="flex-1 p-6 bg-gray-100 overflow-auto">
         <div className="w-full h-full">

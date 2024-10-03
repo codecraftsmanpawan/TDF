@@ -7,7 +7,7 @@ import { faChartLine, faGavel, faShieldAlt } from '@fortawesome/free-solid-svg-i
 import TopNavbar from './TopNavbar';
 import BottomNav from './BottomNav';
 import Sidebar from './SideBar';
-
+import Spinner from './Spinner';  
 const StockSelector = () => {
     const [options, setOptions] = useState([]); 
     const [isToggled, setIsToggled] = useState(false);
@@ -89,7 +89,7 @@ const StockSelector = () => {
     if (loading) {
         return (
             <div className="flex justify-center items-center h-screen bg-blue-100">
-                <div className="w-16 h-16 border-4 border-blue-500 border-solid rounded-full animate-spin"></div>
+              <Spinner />
             </div>
         );
     }

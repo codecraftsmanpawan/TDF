@@ -3,14 +3,17 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChartLine, faGavel, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
-
+import Spinner from './Spinner'; 
 const StockDetailPage = () => {
     const { instrumentId } = useParams();
     const navigate = useNavigate();
     const [stockDetails, setStockDetails] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-
+    const [isToggled, setIsToggled] = useState(false);
+    const toggleView = () => {
+        setIsToggled(!isToggled);
+    };
     // Function to fetch stock details
     const fetchStockDetails = async () => {
         try {
@@ -56,7 +59,7 @@ const StockDetailPage = () => {
     if (loading) {
         return (
             <div className="flex justify-center items-center h-screen">
-                <div className="w-16 h-16 border-4 border-blue-500 border-solid rounded-full animate-spin"></div>
+               <Spinner />
             </div>
         );
     }

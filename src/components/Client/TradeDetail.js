@@ -4,13 +4,18 @@ import axios from 'axios';
 import {jwtDecode} from 'jwt-decode';
 import TopNavbar from './TopNavbar';
 import BottomNav from './BottomNav';
+import Sidebar from './SideBar';
+import Spinner from './Spinner';  
 
 function TradeDetailPage() {
   const { instrumentIdentifier } = useParams();
   const [trades, setTrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const [isToggled, setIsToggled] = useState(false);
+    const toggleView = () => {
+        setIsToggled(!isToggled);
+    };
   const getToken = () => localStorage.getItem('StocksUsertoken');
 
   const getUserIdFromToken = (token) => {
@@ -52,13 +57,14 @@ function TradeDetailPage() {
     fetchTrades();
   }, [instrumentIdentifier]);
 
-  if (loading) return <p className="text-center text-blue-500">Loading...</p>;
-  if (error) return <p className="text-center text-red-500">Error: {error}</p>;
+  if (loading) return  <Spinner />;
+  // if (error) return <p className="text-center text-red-500">Error: {error}</p>;
 
   return (
 <>
   <div className="fixed top-0 left-0 right-0 z-50 bg-blue-500 text-white shadow-md">
-    <TopNavbar />
+   <TopNavbar toggleSidebar={toggleView} />
+   <Sidebar isOpen={isToggled} closeSidebar={toggleView} />
   </div>
   <div className="pt-16 pb-16 bg-blue-50">
     <div className="container mx-auto p-6">

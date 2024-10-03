@@ -1,24 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import {jwtDecode} from 'jwt-decode'; 
+import { jwtDecode } from 'jwt-decode';
 import { TextField, Autocomplete, CircularProgress, Typography, IconButton } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faMinus, faEye } from '@fortawesome/free-solid-svg-icons';
 import TopNavbar from './TopNavbar';
 import BottomNav from './BottomNav';
 import Sidebar from './SideBar';
+import Spinner from './Spinner';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
 
 const StockSearch = () => {
-  const navigate = useNavigate(); // Corrected
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [stocks, setStocks] = useState([]);
   const [wishlist, setWishlist] = useState([]);
+  const [blockedStocks, setBlockedStocks] = useState([]); // Blocked stocks state
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isToggled, setIsToggled] = useState(false);
+
+  // Fetch blocked stocks
+  useEffect(() => {
+    const fetchBlockedStocks = async () => {
+      try {
+        const response = await axios.get('http://16.16.64.168:5000/api/var/Wishlist/blockstocks');
+        setBlockedStocks(response.data.map((stock) => stock.symbol)); 
+      } catch (error) {
+        console.error('Error fetching blocked stocks:', error);
+      }
+    };
+
+    fetchBlockedStocks();
+  }, []);
 
   useEffect(() => {
     const fetchWishlist = async () => {
@@ -70,8 +86,11 @@ const StockSearch = () => {
           },
         })
         .then((response) => {
-          setStocks(response.data);
-          setError(response.data.length === 0 ? 'No stocks found.' : '');
+          const filteredStocks = response.data.filter(
+            (stock) => !blockedStocks.includes(stock.name)
+          );
+          setStocks(filteredStocks);
+          setError(filteredStocks.length === 0 ? 'No stocks found.' : '');
           setLoading(false);
         })
         .catch((err) => {
@@ -80,18 +99,24 @@ const StockSearch = () => {
           setLoading(false);
         });
     }
-  }, [searchTerm]);
+  }, [searchTerm, blockedStocks]);
 
   const toggleView = () => {
     setIsToggled((prev) => !prev);
   };
 
-  const handleAddToWishlist = (stock) => {
+  const handleAddToWishlist = async (stock) => {
     const token = localStorage.getItem('StocksUsertoken');
+
+    if (!token) {
+      toast.error('User is not authenticated');
+      return;
+    }
+
     const { id: userId } = jwtDecode(token);
 
-    axios
-      .post(
+    try {
+      const response = await axios.post(
         'http://16.16.64.168:5000/api/var/client/wishlist/add',
         {
           userId,
@@ -109,15 +134,15 @@ const StockSearch = () => {
             'Content-Type': 'application/json',
           },
         }
-      )
-      .then((response) => {
-        toast.success(response.data.message || `Added ${stock.name} to wishlist`);
-        setWishlist((prevWishlist) => [...prevWishlist, stock]);
-      })
-      .catch((error) => {
-        toast.error(error.response?.data?.message || 'Error adding stock to wishlist');
-        console.error('Error adding stock to wishlist:', error);
-      });
+      );
+
+      toast.success(response.data.message || `Added ${stock.name} to wishlist`);
+      setWishlist((prevWishlist) => [...prevWishlist, stock]);
+
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Error adding stock to wishlist');
+      // console.error('Error adding stock to wishlist:', error);
+    }
   };
 
   const handleRemoveFromWishlist = (itemId) => {
@@ -129,7 +154,6 @@ const StockSearch = () => {
     }
 
     const { id: userId } = jwtDecode(token);
-    console.log('Removing item with ID:', itemId, 'for user:', userId);
 
     axios
       .delete(`http://16.16.64.168:5000/api/var/client/wishlist/remove/${userId}/${itemId}`, {
@@ -148,7 +172,7 @@ const StockSearch = () => {
   };
 
   const handleViewStock = (stock) => {
-    navigate(`/StocksDetails/${stock.InstrumentIdentifier}`); // Corrected navigation
+    navigate(`/StocksDetails/${stock.InstrumentIdentifier}`);
   };
 
   const isInWishlist = (instrumentIdentifier) => {
@@ -205,7 +229,7 @@ const StockSearch = () => {
                 <Typography variant="body2" className="text-blue-800 mb-4 font-medium">
                   Search Results:
                 </Typography>
-                <ul className="list-none">
+          <ul className="list-none">
                   {stocks.map((stock, index) => (
                     <li
                       key={`${stock.InstrumentIdentifier}-${index}`}
@@ -218,6 +242,10 @@ const StockSearch = () => {
                         <Typography variant="body2" className="text-gray-600">
                           {stock.Exchange}
                         </Typography>
+                        <Typography variant="body2" className="text-gray-600">
+  {stock.InstrumentIdentifier.match(/(\d{2}[A-Z]{3}\d{4})/)?.[0] || ''}
+</Typography>
+
                       </div>
                       <div className="flex items-center space-x-3">
                         <IconButton
@@ -265,8 +293,8 @@ const StockSearch = () => {
         </div>
       </div>
 
-      <ToastContainer />
       <BottomNav />
+      <ToastContainer />
     </div>
   );
 };

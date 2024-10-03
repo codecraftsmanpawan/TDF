@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { FaUser, FaLock, FaDollarSign, FaCode, FaPercentage, FaTags, FaEye, FaEyeSlash } from 'react-icons/fa';
-import { v4 as uuidv4 } from 'uuid'; // To generate unique username
-import { toast, ToastContainer } from 'react-toastify'; // Import toast and ToastContainer
-import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
+import { v4 as uuidv4 } from 'uuid'; 
+import { toast, ToastContainer } from 'react-toastify'; 
+import 'react-toastify/dist/ReactToastify.css'; 
 import Navbar from './SuperAdminNav';
 
 const AddMasterAdmin = () => {

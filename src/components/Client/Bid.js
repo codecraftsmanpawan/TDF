@@ -7,6 +7,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import TopNavbar from './TopNavbar';
 import BottomNav from './BottomNav';
+import Sidebar from './SideBar';
+import Spinner from './Spinner';  
 
 // Main BidScreen Component
 const BidScreen = () => {
@@ -14,7 +16,10 @@ const BidScreen = () => {
     const [stockData, setStockData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-
+    const [isToggled, setIsToggled] = useState(false);
+    const toggleView = () => {
+        setIsToggled(!isToggled);
+    };
     useEffect(() => {
         const fetchStockData = async () => {
             try {
@@ -44,20 +49,20 @@ const BidScreen = () => {
     if (loading) {
         return (
             <div className="flex justify-center items-center h-screen bg-gray-100">
-                <div className="w-16 h-16 border-4 border-blue-500 border-solid rounded-full border-t-transparent animate-spin"></div>
+               <Spinner />
             </div>
         );
     }
 
-    if (error) {
-        return (
-            <div className="flex justify-center items-center h-screen bg-gray-100">
-                <div className="text-red-500 text-center">
-                    <p>{error}</p>
-                </div>
-            </div>
-        );
-    }
+    // if (error) {
+    //     return (
+    //         <div className="flex justify-center items-center h-screen bg-gray-100">
+    //             <div className="text-red-500 text-center">
+    //                 <p>{error}</p>
+    //             </div>
+    //         </div>
+    //     );
+    // }
 
     const {
         Exchange = 'N/A',
@@ -73,7 +78,8 @@ const BidScreen = () => {
         <>
             {/* Fixed Top Navbar */}
             <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
-                <TopNavbar/>
+                <TopNavbar toggleSidebar={toggleView} />
+                 <Sidebar isOpen={isToggled} closeSidebar={toggleView} />
             </div>
             
             {/* Page Content */}
@@ -283,22 +289,8 @@ const BuySellPage = ({ buyPrice, sellPrice, lotSize, instrumentId, tradeId, exch
                             readOnly
                         />
                     </div>
-  
-                    <div className="flex justify-between mb-4">
-                        <span className="text-gray-600">Bid Price</span>
-                        <span className="text-gray-600">INR</span>
-                    </div>
-                    <div className="flex items-center mb-4">
-                        <input
-                            type="number"
-                            className="border rounded-lg py-2 px-4 w-full text-lg font-semibold text-blue-900 mx-2 text-center"
-                            placeholder="Enter Price"
-                            value={inputPrice}
-                            onChange={handleInputPriceChange}
-                        />
-                    </div>
 
-                    <div className="flex justify-around mb-6 gap-2">
+                          <div className="flex justify-around mb-6 gap-2">
                         {/* Conditionally render 25% and 50% buttons based on exchange */}
                         {exchange !== "MCX" && (
                             <>
@@ -371,6 +363,20 @@ const BuySellPage = ({ buyPrice, sellPrice, lotSize, instrumentId, tradeId, exch
                                 </button>
                             </>
                         )}
+                    </div>
+  
+                    <div className="flex justify-between mb-4">
+                        <span className="text-gray-600">Bid Price</span>
+                        <span className="text-gray-600">INR</span>
+                    </div>
+                    <div className="flex items-center mb-4">
+                        <input
+                            type="number"
+                            className="border rounded-lg py-2 px-4 w-full text-lg font-semibold text-blue-900 mx-2 text-center"
+                            placeholder="Enter Price"
+                            value={inputPrice}
+                            onChange={handleInputPriceChange}
+                        />
                     </div>
 
                     <button

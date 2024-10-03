@@ -3,12 +3,17 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode'; 
 import TopNav from './TopNavbar';
 import BottomNav from './BottomNav';
+import Sidebar from './SideBar';
+import Spinner from './Spinner';  
 
 const TradeHistory = () => {
   const [tradeData, setTradeData] = useState(null);
   const [mcxTradesWithLotSize, setMcxTradesWithLotSize] = useState([]);
   const [error, setError] = useState(null);
-
+  const [isToggled, setIsToggled] = useState(false);
+    const toggleView = () => {
+        setIsToggled(!isToggled);
+    };
   useEffect(() => {
     const fetchTrades = async () => {
       try {
@@ -49,7 +54,7 @@ const TradeHistory = () => {
             const quotationLot = lotResponse.data.QuotationLot || 1; 
             return {
               ...trade,
-              quantity: trade.quantity / quotationLot, // Adjust the quantity
+              quantity: trade.quantity / quotationLot, 
               quotationLot,
             };
           } catch (err) {
@@ -73,7 +78,7 @@ const TradeHistory = () => {
   };
 
   if (!tradeData) {
-    return <div>Loading...</div>;
+    return  <Spinner />;
   }
 
   const { client, nseTrades, totalNSEAmount, brokeragePerMCX, totalMCXAmount, brokeragePerNSECrore, totalBrokerage, totalAmount } = tradeData;
@@ -81,7 +86,8 @@ const TradeHistory = () => {
   return (
     <div className="flex flex-col h-screen">
       {/* Top Navigation */}
-      <TopNav />
+      <TopNav toggleSidebar={toggleView} />
+      <Sidebar isOpen={isToggled} closeSidebar={toggleView} />
 
       <main className="flex-1 overflow-y-auto p-6 mb-16">
         <h1 className="text-3xl font-semibold mb-6 text-blue-600">Trade History</h1>
@@ -91,7 +97,8 @@ const TradeHistory = () => {
           <div className="mb-6 p-4 bg-blue-100 rounded-lg">
             <h2 className="text-2xl font-bold text-blue-700 mb-4">Client Brokerage</h2>
             <p><strong>Share Brokerage:</strong> ₹{client.share_brokerage}</p>
-            <p><strong>MCX Brokerage Type:</strong> {client.mcx_brokerage_type === 'per_crore' ? 'Per Crore' : client.mcx_brokerage_type}</p>
+           <p><strong>MCX Brokerage Type:</strong> {client.mcx_brokerage_type === 'per_crore' ? 'Per Crore' : client.mcx_brokerage_type === 'per_sauda' ? 'Per Sauda' : client.mcx_brokerage_type}</p>
+
             <p><strong>MCX Brokerage:</strong> ₹{client.mcx_brokerage}</p>
           </div>
 
@@ -109,8 +116,8 @@ const TradeHistory = () => {
                   <th className="py-2 px-4">Name</th>
                   <th className="py-2 px-4">Exchange</th>
                   <th className="py-2 px-4">Trade Type</th>
-                  <th className="py-2 px-4">Quantity</th>
-                  <th className="py-2 px-4">Price</th>
+                  <th className="py-2 px-4">Trade Quantity</th>
+                  <th className="py-2 px-4">Investment Price/Share</th>
                   <th className="py-2 px-4">Date</th>
                   <th className="py-2 px-4">Update At</th>
                 </tr>
@@ -142,8 +149,8 @@ const TradeHistory = () => {
                   <th className="py-2 px-4">Name</th>
                   <th className="py-2 px-4">Exchange</th>
                   <th className="py-2 px-4">Trade Type</th>
-                  <th className="py-2 px-4">Quantity</th>
-                  <th className="py-2 px-4">Price</th>
+                  <th className="py-2 px-4">Trade Quantity</th>
+                  <th className="py-2 px-4">Investment Price/Share</th>
                   <th className="py-2 px-4">Date</th>
                   <th className="py-2 px-4">Update At</th>
                 </tr>

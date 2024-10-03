@@ -151,7 +151,7 @@ const ClientDetails = () => {
                 </tbody>
               </table>
             </div>
-            <p className="text-xl font-semibold mb-4">Total NSE Amount: ₹{tradeData.totalNSEAmount}</p>
+            {/* <p className="text-xl font-semibold mb-4">Total NSE Amount: ₹{tradeData.totalNSEAmount}</p> */}
             <p className="text-xl font-semibold mb-4">Total NSE Brokerage: ₹{tradeData.brokeragePerNSECrore}</p>
 
             {/* MCX Trades Table */}
@@ -184,7 +184,7 @@ const ClientDetails = () => {
                 </tbody>
               </table>
             </div>
-            <p className="text-xl font-semibold mb-4">Total MCX Amount: ₹{tradeData.totalMCXAmount}</p>
+            {/* <p className="text-xl font-semibold mb-4">Total MCX Amount: ₹{tradeData.totalMCXAmount}</p> */}
             <p className="text-xl font-semibold mb-4">Total MCX Brokerage: ₹{tradeData.brokeragePerMCX}</p>
           </div>
         </div>

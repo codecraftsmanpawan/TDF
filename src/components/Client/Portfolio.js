@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode'; // Default import
+import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 import TopNavbar from './TopNavbar';
 import BottomNav from './BottomNav';
+import Sidebar from './SideBar';
+import Spinner from './Spinner';
 import Bids from './BidsPage';
 import Stoploss from './StoplossPage';
 
@@ -18,6 +20,11 @@ const StockPortfolio = () => {
     const navigate = useNavigate();
     const [responseData, setResponseData] = useState(null);
     const [totalProfitLoss, setTotalProfitLoss] = useState('0.00');
+    const [isToggled, setIsToggled] = useState(false);
+
+    const toggleView = () => {
+        setIsToggled(!isToggled);
+    };
 
     const getToken = () => localStorage.getItem('StocksUsertoken');
 
@@ -30,19 +37,36 @@ const StockPortfolio = () => {
         return null;
     };
 
+    const isWithinTradePriceTimeframe = () => {
+        const now = new Date();
+        const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
+        const kolkataTime = new Date(utcTime + 19800000);
+
+        const day = kolkataTime.getDay();
+        const hour = kolkataTime.getHours();
+        const minute = kolkataTime.getMinutes();
+
+        if (day === 0 && (hour > 18 || (hour === 18 && minute >= 40))) return true; 
+        if (day === 1 && (hour < 9 || (hour === 9 && minute < 15))) return true; 
+        return false;
+    };
+
     useEffect(() => {
         const fetchTrades = async () => {
             try {
                 const userId = getUserIdFromToken();
+                // console.log('User ID:', userId);
                 if (userId) {
                     const response = await axios.get(`http://16.16.64.168:5000/api/var/client/trades/net-quantity/${userId}`, {
                         headers: {
                             'Authorization': `Bearer ${getToken()}`
                         }
                     });
+                    // console.log('API Response:', response.data);
                     setTrades(response.data.netQuantities);
                 }
             } catch (err) {
+                // console.error('Error fetching trades:', err.message);
                 setError(err.message);
             } finally {
                 setLoading(false);
@@ -88,7 +112,7 @@ const StockPortfolio = () => {
                 }
             }));
         } catch (err) {
-            console.error('Error fetching real-time data:', err);
+            // console.error('Error fetching real-time data:', err);
         }
     };
 
@@ -216,7 +240,12 @@ const StockPortfolio = () => {
 
             acc[key].trades.push(trade);
             acc[key].totalQuantity += trade.netQuantity;
-            acc[key].totalInvestment += trade.price * trade.netQuantity;
+
+            const stockData = realTimeData[trade.instrumentIdentifier] || {};
+            const currentPrice = trade.action === 'buy' ? stockData.BuyPrice : stockData.SellPrice;
+            const displayPrice = isWithinTradePriceTimeframe() ? currentPrice : trade.averagePrice;
+
+            acc[key].totalInvestment += displayPrice * trade.netQuantity;
 
             return acc;
         }, {});
@@ -236,13 +265,23 @@ const StockPortfolio = () => {
                 totalCurrentValue,
                 totalProfitLoss,
                 Close: currentPrice,
-                QuotationLot: stockData.QuotationLot || 1, 
+                QuotationLot: stockData.QuotationLot || 1,
                 tradeData: trades[0]
             };
         }).filter(tradeData => {
             return tradeData.tradeData.action === 'sell' || 
                 (tradeData.totalQuantity > 0 && tradeData.tradeData.action === 'buy');
         });
+    };
+
+    const groupedTrades = groupTradesByInstrument(trades);
+
+    if (loading) {
+        return <Spinner />;
+    }
+
+    const handleNavigation = () => {
+        navigate('/history');
     };
 
     const formatInstrumentIdentifier = (identifier) => {
@@ -258,20 +297,12 @@ const StockPortfolio = () => {
         return exchange === 'MCX' ? `${quantity} Lot` : `${quantity} Share`;
     };
 
-    if (loading) {
-        return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-    }
-
-    const groupedTrades = groupTradesByInstrument(trades);
-
-    const handleNavigation = () => {
-        navigate('/history');
-    };
 
     return (
         <>
             <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
-                <TopNavbar />
+            <TopNavbar toggleSidebar={toggleView} />
+            <Sidebar isOpen={isToggled} closeSidebar={toggleView} />
             </div>
             <div className="container mx-auto p-2 mt-16">
                 <h2 className="text-2xl font-bold mb-4 mt-4">Stock Portfolio</h2>
@@ -326,55 +357,55 @@ const StockPortfolio = () => {
                                     <th className="py-2 px-4">Action</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                {groupedTrades.length > 0 ? (
-                                    groupedTrades.map((tradeData, index) => {
-                                        const { instrumentIdentifier, exchange, totalQuantity, totalInvestment, totalCurrentValue, tradeData: trade, QuotationLot } = tradeData;
-                                        const stockData = realTimeData[instrumentIdentifier] || {};
-                                        const currentPrice = trade.action === 'buy' ? stockData.BuyPrice : stockData.SellPrice;
-                                        const { value: profitLossValue, color: profitLossColor, percentage } = calculateProfitLoss(totalInvestment, totalCurrentValue, trade.tradeType, exchange, QuotationLot);
-
-                                        return (
-                                            <tr 
-                                                key={instrumentIdentifier} 
-                                                className={`${index % 2 === 0 ? 'bg-white' : 'bg-blue-100'} text-center cursor-pointer`}
-                                                onClick={() => handleRowClick(instrumentIdentifier)}
-                                            >
-                                                <td className="py-2 px-4 border-b">{index + 1}</td>
-                                                <td className="py-2 px-4 border-b">{trade.name}</td>
-                                                <td className="py-2 px-4 border-b">{formatInstrumentIdentifier(instrumentIdentifier)}</td>
-                                                <td className="py-2 px-4 border-b">{exchange}</td>
-                                                <td className="py-2 px-4 border-b">{formatQuantity(totalQuantity, exchange)}</td>
-                                                <td className="py-2 px-4 border-b" style={{ textTransform: 'capitalize' }}>{trade.tradeType}</td>
-                                                <td className="py-2 px-4 border-b">{trade.price}</td>
-                                                <td className="py-2 px-4 border-b">₹{totalInvestment.toFixed(2)}</td>
-                                                <td className="py-2 px-4 border-b">₹{totalCurrentValue.toFixed(2)}</td>
-                                                <td className="py-2 px-4 border-b">
-                                                    <span className={profitLossColor}>{profitLossValue}</span>
-                                                </td>
-                                                <td className="py-2 px-4 border-b">
-                                                    {trade.action === 'buy' ? `₹${stockData.BuyPrice}` : `₹${stockData.SellPrice}`}
-                                                </td>
-                                                <td className="py-2 px-4 border-b">
-                                                    <button
-                                                        className={`text-white font-bold py-1 px-3 rounded capitalize ${getButtonColor(trade.action)}`}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleButtonClick(trade);
-                                                        }}
-                                                    >
-                                                        {trade.action}
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
-                                ) : (
-                                    <tr>
-                                        <td colSpan="12" className="text-center py-4">No trades available.</td>
-                                    </tr>
-                                )}
-                            </tbody>
+                      <tbody>
+             {groupedTrades.length > 0 ? (
+        groupedTrades.map((tradeData, index) => {
+            const { instrumentIdentifier, exchange, totalQuantity, totalInvestment, totalCurrentValue, tradeData: trade, QuotationLot } = tradeData;
+            const stockData = realTimeData[instrumentIdentifier] || {};
+            const currentPrice = trade.action === 'buy' ? stockData.BuyPrice : stockData.SellPrice;
+            const { value: profitLossValue, color: profitLossColor, percentage } = calculateProfitLoss(totalInvestment, totalCurrentValue, trade.tradeType, exchange, QuotationLot);
+            const displayPrice = isWithinTradePriceTimeframe() ? currentPrice : trade.averagePrice; 
+            return (
+                <tr 
+                    key={instrumentIdentifier} 
+                    className={`${index % 2 === 0 ? 'bg-white' : 'bg-blue-100'} text-center cursor-pointer`}
+                    onClick={() => handleRowClick(instrumentIdentifier)}
+                >
+                    <td className="py-2 px-4 border-b">{index + 1}</td>
+                    <td className="py-2 px-4 border-b">{trade.name}</td>
+                    <td className="py-2 px-4 border-b">{formatInstrumentIdentifier(instrumentIdentifier)}</td>
+                    <td className="py-2 px-4 border-b">{exchange}</td>
+                    <td className="py-2 px-4 border-b">{formatQuantity(totalQuantity, exchange)}</td>
+                    <td className="py-2 px-4 border-b" style={{ textTransform: 'capitalize' }}>{trade.tradeType}</td>
+                    <td className="py-2 px-4 border-b">{displayPrice}</td> {/* Display the appropriate price */}
+                    <td className="py-2 px-4 border-b">₹{totalInvestment.toFixed(2)}</td>
+                    <td className="py-2 px-4 border-b">₹{totalCurrentValue.toFixed(2)}</td>
+                    <td className="py-2 px-4 border-b">
+                        <span className={profitLossColor}>{profitLossValue}</span>
+                    </td>
+                    <td className="py-2 px-4 border-b">
+                        {trade.action === 'buy' ? `₹${stockData.BuyPrice}` : `₹${stockData.SellPrice}`}
+                    </td>
+                    <td className="py-2 px-4 border-b">
+                        <button
+                            className={`text-white font-bold py-1 px-3 rounded capitalize ${getButtonColor(trade.action)}`}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleButtonClick(trade);
+                            }}
+                        >
+                            {trade.action}
+                        </button>
+                    </td>
+                </tr>
+            );
+        })
+    ) : (
+        <tr>
+            <td colSpan="12" className="text-center py-4">No trades available.</td>
+        </tr>
+    )}
+</tbody>
                           </table>
                         </div>
                     )}

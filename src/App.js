@@ -20,6 +20,7 @@ import SuperAdminMangeStocks from './components/SuperAdmin/SuperAdminMangeStocks
 import QuantityLimit from './components/SuperAdmin/QuantityLimit';
 import MangeQuantityLimit from './components/SuperAdmin/MangeQuantityLimit';
 import ViewAllUserStands from './components/SuperAdmin/ViewAllUserStands';
+import AddNotification from './components/SuperAdmin/AddNotification';
 import ClientView from './components/SuperAdmin/ClientView';
 import ClientSearch from './components/Client/Search';
 import ClientPortfolio from './components/Client/Portfolio';
@@ -32,7 +33,9 @@ import SelectTrade from './components/Client/SelectTrade';
 import TradeDetail from './components/Client/TradeDetail';
 import TradeAction from './components/Client/TradeAction';
 import History from './components/Client/Histrory';
-
+import ClientPasswordChange from './components/Client/PasswordChange';
+import WishlistSetoffPage from './components/Client/WishlistSetoffPage'; 
+import NotificationList from './components/Client/NotificationList'; 
 
 function App() {
   return (
@@ -60,6 +63,7 @@ function App() {
              <Route path="/Client/View/:id" element={<ClientView />} />
                 <Route path="/master/Profile" element={<Profile />} />
                 <Route path="/master/404" element={<BlockPage />} />
+                 <Route path="/Add/Notification" element={<AddNotification />} />
                   <Route path="/search" element={<ClientSearch />} />
                    <Route path="/portfolio" element={<ClientPortfolio />} />
                      <Route path="/chart" element={<Chart />} />
@@ -71,6 +75,9 @@ function App() {
                           <Route path="/trade/detail/:instrumentIdentifier" element={<TradeDetail />} />
                            <Route path="/trade/:action/:instrumentIdentifier" element={<TradeAction />} />
                                <Route path="/history" element={<History />} />
+                                <Route path="/client/Password/Change" element={<ClientPasswordChange />} />
+                                <Route path="/wishlist-setoff" element={<WishlistSetoffPage />} />
+                                 <Route path="/notification" element={<NotificationList />} />
                               
       </Routes>
     </div>

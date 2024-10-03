@@ -5,6 +5,7 @@ import {jwtDecode} from 'jwt-decode';
 import TopNavbar from './TopNavbar';
 import BottomNav from './BottomNav';
 import Sidebar from './SideBar';
+import Spinner from './Spinner';  
 import { FaMinus, FaPlus } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -64,7 +65,7 @@ const TradeScreen = () => {
     if (loading) {
         return (
             <div className="flex justify-center items-center h-screen bg-gray-100">
-                <div className="w-16 h-16 border-4 border-blue-500 border-solid rounded-full border-t-transparent animate-spin"></div>
+                <Spinner />
             </div>
         );
     }

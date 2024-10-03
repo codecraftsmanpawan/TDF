@@ -39,6 +39,12 @@ const Navbar = () => {
         >
          Manage Quantity Limit
         </Link>
+         <Link
+          to="/Add/Notification"
+          className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300 mr-4"
+        >
+         Add Notification
+        </Link>
         <button
           onClick={handleLogout}
           className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition duration-300"

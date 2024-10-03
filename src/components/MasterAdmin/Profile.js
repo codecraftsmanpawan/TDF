@@ -17,7 +17,7 @@ const MasterAdminDetails = () => {
 
         // Decode the token to get the masterAdmin ID
         const decodedToken = jwtDecode(token);
-        const masterAdminId = decodedToken.id; // Adjust according to your token structure
+        const masterAdminId = decodedToken.id; 
 
         // Fetch data using the masterAdmin ID
         const response = await axios.get(`http://16.16.64.168:5000/api/var/masterAdmin/masteradmin/${masterAdminId}`, {

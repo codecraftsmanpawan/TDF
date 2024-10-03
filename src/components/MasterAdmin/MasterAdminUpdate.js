@@ -74,26 +74,26 @@ const UpdatePage = () => {
     }
   };
 
-  const updateBudgetInfo = async () => {
+  const updateavailableBudgetInfo = async () => {
     if (!client) return; // Ensure client is not null
 
     try {
       const token = localStorage.getItem('masterAdminToken');
       const adjustment = parseFloat(adjustmentAmount);
 
-      let updatedBudget;
+      let updatedavailableBudget;
       if (adjustmentType === 'add') {
-        updatedBudget = parseFloat(client.budget) + adjustment;
+        updatedavailableBudget = parseFloat(client.availableBudget) + adjustment;
       } else if (adjustmentType === 'subtract') {
-        updatedBudget = parseFloat(client.budget) - adjustment;
-        if (updatedBudget < 0) {
-          toast.error('Budget values cannot be negative.');
+        updatedavailableBudget = parseFloat(client.availableBudget) - adjustment;
+        if (updatedavailableBudget < 0) {
+          toast.error('availableBudget values cannot be negative.');
           return;
         }
       }
 
       const response = await axios.put(`http://16.16.64.168:5000/api/var/masterAdmin/update-client/${id}`, {
-        budget: updatedBudget
+        availableBudget: updatedavailableBudget
       }, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -101,27 +101,27 @@ const UpdatePage = () => {
       });
 
       if (response.data.success) {
-        toast.success('Budget information updated successfully!');
+        toast.success('availableBudget information updated successfully!');
         setClient(prevClient => ({
           ...prevClient,
-          budget: updatedBudget
+          availableBudget: updatedavailableBudget
         }));
       } else {
-        toast.error(response.data.message || 'An error occurred while updating budget information.');
+        toast.error(response.data.message || 'An error occurred while updating availableBudget information.');
       }
     } catch (error) {
-      console.error('Error updating budget information:', error);
-      toast.error('An error occurred while updating budget information.');
+      console.error('Error updating availableBudget information:', error);
+      toast.error('An error occurred while updating availableBudget information.');
     }
   };
 
   // Use default values if client is null
-  const currentBudget = client ? parseFloat(client.budget) : 0;
-  const calculatedBudget = adjustmentType === 'add'
-    ? currentBudget + parseFloat(adjustmentAmount)
+  const currentavailableBudget = client ? parseFloat(client.availableBudget) : 0;
+  const calculatedavailableBudget = adjustmentType === 'add'
+    ? currentavailableBudget + parseFloat(adjustmentAmount)
     : adjustmentType === 'subtract'
-    ? currentBudget - parseFloat(adjustmentAmount)
-    : currentBudget;
+    ? currentavailableBudget - parseFloat(adjustmentAmount)
+    : currentavailableBudget;
 
   if (loading) return <div className="text-center py-4">Loading...</div>;
   if (error) return <div className="text-center py-4 text-red-500">{error}</div>;
@@ -205,7 +205,7 @@ const UpdatePage = () => {
               <label className="block text-gray-700 font-semibold mb-2">Update Budget:</label>
               <input
                 type="number"
-                value={currentBudget}
+                value={currentavailableBudget}
                 readOnly
                 className="border border-gray-300 p-2 rounded w-full"
               />
@@ -244,12 +244,12 @@ const UpdatePage = () => {
               />
             </div>
             <div className="mb-4">
-              <p className={`text-lg font-semibold ${calculatedBudget < 0 ? 'text-red-500' : 'text-gray-700'}`}>
-                Calculated Budget: ₹{calculatedBudget.toFixed(2)}
+              <p className={`text-lg font-semibold ${calculatedavailableBudget < 0 ? 'text-red-500' : 'text-gray-700'}`}>
+                Calculated Budget: ₹{calculatedavailableBudget.toFixed(2)}
               </p>
             </div>
             <button
-              onClick={updateBudgetInfo}
+              onClick={updateavailableBudgetInfo}
               className="bg-blue-500 text-white py-2 px-4 rounded"
             >
               Update Budget

@@ -5,6 +5,8 @@ import {jwtDecode} from 'jwt-decode';
 import { FaMinus, FaPlus } from 'react-icons/fa'; 
 import TopNavbar from './TopNavbar';
 import BottomNav from './BottomNav';
+import Sidebar from './SideBar';
+import Spinner from './Spinner';  
 
 const InstrumentDetails = () => {
   const { instrumentIdentifier } = useParams();
@@ -14,8 +16,11 @@ const InstrumentDetails = () => {
   const [error, setError] = useState(null);
   const [stockDetails, setStockDetails] = useState(null);
   const [availableQuantity, setAvailableQuantity] = useState(0);
-const navigate = useNavigate();
-
+  const navigate = useNavigate();
+  const [isToggled, setIsToggled] = useState(false);
+  const toggleView = () => {
+        setIsToggled(!isToggled);
+    };
   const getToken = () => {
     return localStorage.getItem('StocksUsertoken'); 
   };
@@ -37,7 +42,7 @@ const navigate = useNavigate();
         return;
       }
 
-      const userId = getUserIdFromToken(); // Get user ID from token
+      const userId = getUserIdFromToken();
       if (!userId) {
         setError('User ID not found in token.');
         return;
@@ -61,7 +66,6 @@ const navigate = useNavigate();
           setIsBuy(firstTradeAction === "buy");
         }
 
-        // Set available quantity based on action
         const initialQuantity = response.data.trades.reduce((acc, trade) => {
           return trade.action === "buy" ? acc + trade.quantity : acc;
         }, 0);
@@ -96,21 +100,35 @@ const navigate = useNavigate();
       }
     };
 
+    // Fetch data immediately on mount
     fetchData();
     fetchStockDetails();
-  }, [instrumentIdentifier]);
 
-  const handleTabChange = (action) => {
-    setIsBuy(action === "buy");
-    setAvailableQuantity(action === "buy" ? instrumentData?.netBuyQuantity || 0 : instrumentData?.netSellQuantity || 0);
-  };
+    // Set up an interval to fetch stock details every second
+    const intervalId = setInterval(fetchStockDetails, 1000);
 
-  const handlePercentageChange = (percentage) => {
-    if (availableQuantity > 0) {
-      const newAmount = (availableQuantity * percentage).toFixed(2);
-      setAmount(newAmount);
-    }
-  };
+    // Cleanup function to clear the interval
+    return () => clearInterval(intervalId);
+  }, [instrumentIdentifier]); 
+
+
+const handleTabChange = (action) => {
+  setIsBuy(action === "buy");
+  setAvailableQuantity(action === "buy" ? instrumentData?.netBuyQuantity || 0 : instrumentData?.netSellQuantity || 0);
+};
+
+const handlePercentageChange = (percentage) => {
+  const positiveQuantity = Math.abs(availableQuantity);
+  
+  if (positiveQuantity > 0) {
+    const newAmount = (positiveQuantity * percentage).toFixed(2);
+    setAmount(newAmount);
+  } else {
+    setError('No available quantity to trade.'); 
+  }
+};
+
+
 
   const handleTrade = async () => {
     const token = getToken();
@@ -134,7 +152,7 @@ const navigate = useNavigate();
       quantity: parseFloat(amount),
       price: isBuy ? stockDetails?.BuyPrice : stockDetails?.SellPrice
     };
-    console.log(data);
+    // console.log(data);
 
     const config = {
       method: 'post',
@@ -157,7 +175,7 @@ const navigate = useNavigate();
   };
 
   if (!instrumentData || !stockDetails) {
-    return <div>Loading...</div>;
+    return  <Spinner />;
   }
 
   const { netBuyQuantity, netSellQuantity } = instrumentData;
@@ -165,7 +183,8 @@ const navigate = useNavigate();
 
   return (
     <>
-      <TopNavbar />
+      <TopNavbar toggleSidebar={toggleView} />
+      <Sidebar isOpen={isToggled} closeSidebar={toggleView} />
       <main className="flex-1">
         <div className="flex justify-center items-center h-full">
           <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-md">

@@ -64,11 +64,11 @@ const StockTable = () => {
     const filtered = stockData
       .map(stock => ({
         ...stock,
-        isBlocked: blockedStocks.some(blockedStock => blockedStock.symbol === stock.InstrumentIdentifier)
+        isBlocked: blockedStocks.some(blockedStock => blockedStock.symbol === stock.name)
       }))
       .filter(stock => {
         const symbol = stock.symbol ? stock.symbol.toLowerCase() : '';
-        const identifier = stock.InstrumentIdentifier ? stock.InstrumentIdentifier.toLowerCase() : '';
+        const identifier = stock.name ? stock.name.toLowerCase() : '';
         const term = searchTerm.toLowerCase();
 
         return symbol.includes(term) || identifier.includes(term);
@@ -102,7 +102,7 @@ const StockTable = () => {
     try {
       const token = localStorage.getItem('superAdminToken');
       const data = {
-        symbol: selectedStock.InstrumentIdentifier,
+        symbol: selectedStock.name,
         exchange: selectedStock.Exchange
       };
 
@@ -118,7 +118,7 @@ const StockTable = () => {
 
       const response = await axios.request(config);
       console.log('Block stock added:', response.data);
-      toast.success(`Block stock added: ${selectedStock.InstrumentIdentifier}`);
+      toast.success(`Block stock added: ${selectedStock.name}`);
       fetchBlockedStocks();
     } catch (error) {
       console.error('Error adding block stock:', error);
@@ -131,7 +131,7 @@ const StockTable = () => {
   const handleDeleteBlock = async (stock) => {
     try {
       const token = localStorage.getItem('superAdminToken');
-      const symbol = stock.InstrumentIdentifier;
+      const symbol = stock.name;
 
       const config = {
         method: 'delete',
@@ -264,7 +264,7 @@ const StockTable = () => {
             <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
               <h3 className="text-xl font-semibold mb-4">Block Stock</h3>
               <p>Are you sure you want to block this stock?</p>
-              <p className="font-bold text-lg">{selectedStock.InstrumentIdentifier}</p>
+              <p className="font-bold text-lg">{selectedStock.name}</p>
               <div className="mt-4">
                 <button
                   onClick={handleConfirmBlock}
