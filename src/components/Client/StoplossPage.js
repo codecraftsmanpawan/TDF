@@ -124,7 +124,7 @@ const Stoploss = () => {
                             const stock = stockData[stoploss.instrumentIdentifier] || {};
                             const tradeType = capitalizeFirstLetter(stoploss.tradeType);
                             const backgroundColor = tradeType === 'Sell' ? 'bg-red-200' : 'bg-green-200';
-
+                            const isFulfilled = stoploss.status === 'fulfilled';
                             return (
                                 <tr key={stoploss._id} className={`${index % 2 === 0 ? 'bg-white' : 'bg-blue-100'} ${backgroundColor} text-center`}>
                                     <td className="py-2 px-4 border-b">{index + 1}</td>
@@ -152,9 +152,23 @@ const Stoploss = () => {
                                             hour12: true
                                         })}
                                     </td>
-                                    <td className="py-2 px-4 border-b">
-                                        <button onClick={() => handleEditClick(stoploss)} className="bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 rounded px-4 py-2 transition">Edit</button>
-                                        <button onClick={() => handleDeleteClick(stoploss)} className="bg-red-500 text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 rounded px-4 py-2 transition ml-2">Delete</button>
+                                           <td className="py-2 px-4 border-b">
+                                        {!isFulfilled && (
+                                            <>
+                                                <button 
+                                                    onClick={() => handleEditClick(stoploss)} 
+                                                    className="bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 rounded px-4 py-2 transition"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleDeleteClick(stoploss)} 
+                                                    className="bg-red-500 text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 rounded px-4 py-2 transition ml-2"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </>
+                                        )}
                                     </td>
                                 </tr>
                             );
