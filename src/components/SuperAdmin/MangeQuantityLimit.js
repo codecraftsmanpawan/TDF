@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import ReactDOM from 'react-dom';
-import Navbar from './SuperAdminNav';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import ReactDOM from "react-dom";
+import Navbar from "./SuperAdminNav";
 
 // Confirmation Modal Component
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, item }) => {
@@ -44,25 +44,31 @@ const DataTable = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const storedToken = localStorage.getItem('superAdminToken');
+        const storedToken = localStorage.getItem("superAdminToken");
         if (!storedToken) {
-          throw new Error('No token found');
+          throw new Error("No token found");
         }
 
         // Fetch items data
-        const itemsResponse = await axios.get('http://16.16.64.168:5000/api/var/superAdmin/items', {
-          headers: {
-            'Authorization': `Bearer ${storedToken}`
+        const itemsResponse = await axios.get(
+          "http://13.51.178.27:5000/api/var/superAdmin/items",
+          {
+            headers: {
+              Authorization: `Bearer ${storedToken}`,
+            },
           }
-        });
+        );
         setData(itemsResponse.data);
 
         // Fetch overall limit data
-        const overallLimitResponse = await axios.get('http://16.16.64.168:5000/api/var/superAdmin/overall-limit', {
-          headers: {
-            'Authorization': `Bearer ${storedToken}`
+        const overallLimitResponse = await axios.get(
+          "http://13.51.178.27:5000/api/var/superAdmin/overall-limit",
+          {
+            headers: {
+              Authorization: `Bearer ${storedToken}`,
+            },
           }
-        });
+        );
         setOverallLimitData(overallLimitResponse.data);
       } catch (error) {
         setError(error);
@@ -85,26 +91,30 @@ const DataTable = () => {
 
   const confirmDelete = async () => {
     try {
-      const storedToken = localStorage.getItem('superAdminToken');
+      const storedToken = localStorage.getItem("superAdminToken");
       if (!storedToken) {
-        throw new Error('No token found');
+        throw new Error("No token found");
       }
 
-      await axios.delete(`http://16.16.64.168:5000/api/var/superAdmin/items/${itemToDelete.symbol}`, {
-        headers: {
-          'Authorization': `Bearer ${storedToken}`
+      await axios.delete(
+        `http://13.51.178.27:5000/api/var/superAdmin/items/${itemToDelete.symbol}`,
+        {
+          headers: {
+            Authorization: `Bearer ${storedToken}`,
+          },
         }
-      });
+      );
 
-      setData(data.filter(item => item.symbol !== itemToDelete.symbol));
+      setData(data.filter((item) => item.symbol !== itemToDelete.symbol));
       setIsModalOpen(false);
     } catch (error) {
-      console.error('Error deleting item:', error);
+      console.error("Error deleting item:", error);
     }
   };
 
   if (loading) return <p className="text-center">Loading...</p>;
-  if (error) return <p className="text-center text-red-500">Error: {error.message}</p>;
+  if (error)
+    return <p className="text-center text-red-500">Error: {error.message}</p>;
 
   return (
     <>
@@ -112,28 +122,52 @@ const DataTable = () => {
       <div className="flex flex-wrap justify-center min-h-screen bg-gray-100 p-4 mt-16 gap-4">
         <div className="bg-white shadow-md rounded-lg overflow-hidden w-full max-w-4xl mt-8">
           <div className="p-4 border-b border-gray-200">
-            <h1 className="text-2xl font-bold">All Quantity Limit Set Stocks</h1>
+            <h1 className="text-2xl font-bold">
+              All Quantity Limit Set Stocks
+            </h1>
           </div>
           <div className="p-4">
             <table className="min-w-full bg-white border border-gray-300">
               <thead>
                 <tr>
-                  <th className="py-3 px-6 border-b border-gray-200 text-left">#</th>
-                  <th className="py-3 px-6 border-b border-gray-200 text-left">Symbol</th>
-                  <th className="py-3 px-6 border-b border-gray-200 text-left">Limit</th>
-                  <th className="py-3 px-6 border-b border-gray-200 text-left">Lot Size</th>
-                  <th className="py-3 px-6 border-b border-gray-200 text-left">Created At</th>
-                  <th className="py-3 px-6 border-b border-gray-200 text-left">Actions</th>
+                  <th className="py-3 px-6 border-b border-gray-200 text-left">
+                    #
+                  </th>
+                  <th className="py-3 px-6 border-b border-gray-200 text-left">
+                    Symbol
+                  </th>
+                  <th className="py-3 px-6 border-b border-gray-200 text-left">
+                    Limit
+                  </th>
+                  <th className="py-3 px-6 border-b border-gray-200 text-left">
+                    Lot Size
+                  </th>
+                  <th className="py-3 px-6 border-b border-gray-200 text-left">
+                    Created At
+                  </th>
+                  <th className="py-3 px-6 border-b border-gray-200 text-left">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {data.map((item, index) => (
                   <tr key={item.symbol}>
-                    <td className="py-3 px-6 border-b border-gray-200">{index + 1}</td>
-                    <td className="py-3 px-6 border-b border-gray-200">{item.name}</td>
-                    <td className="py-3 px-6 border-b border-gray-200">{item.limit}</td>
-                    <td className="py-3 px-6 border-b border-gray-200">{item.lotSize}</td>
-                    <td className="py-3 px-6 border-b border-gray-200">{new Date(item.createdAt).toLocaleString()}</td>
+                    <td className="py-3 px-6 border-b border-gray-200">
+                      {index + 1}
+                    </td>
+                    <td className="py-3 px-6 border-b border-gray-200">
+                      {item.name}
+                    </td>
+                    <td className="py-3 px-6 border-b border-gray-200">
+                      {item.limit}
+                    </td>
+                    <td className="py-3 px-6 border-b border-gray-200">
+                      {item.lotSize}
+                    </td>
+                    <td className="py-3 px-6 border-b border-gray-200">
+                      {new Date(item.createdAt).toLocaleString()}
+                    </td>
                     <td className="py-3 px-6 border-b border-gray-200">
                       <button
                         onClick={() => handleDelete(item)}
@@ -152,11 +186,17 @@ const DataTable = () => {
         {overallLimitData && (
           <div className="bg-white shadow-md rounded-lg p-4 max-w-md w-full mt-8">
             <h1 className="text-2xl font-bold mb-4">Overall Limit Details</h1>
-            <p><strong>Current Overall Limit:</strong> {overallLimitData.overallLimit}</p>
-            <p><strong>Updated At:</strong> {new Date(overallLimitData.updatedAt).toLocaleString()}</p>
+            <p>
+              <strong>Current Overall Limit:</strong>{" "}
+              {overallLimitData.overallLimit}
+            </p>
+            <p>
+              <strong>Updated At:</strong>{" "}
+              {new Date(overallLimitData.updatedAt).toLocaleString()}
+            </p>
           </div>
         )}
-        
+
         <ConfirmationModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}

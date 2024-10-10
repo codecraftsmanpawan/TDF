@@ -1,29 +1,38 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { FaUser, FaLock, FaDollarSign, FaCode, FaPercentage, FaTags, FaEye, FaEyeSlash } from 'react-icons/fa';
-import { v4 as uuidv4 } from 'uuid'; 
-import { toast, ToastContainer } from 'react-toastify'; 
-import 'react-toastify/dist/ReactToastify.css'; 
-import Navbar from './SuperAdminNav';
+import React, { useState } from "react";
+import axios from "axios";
+import {
+  FaUser,
+  FaLock,
+  FaDollarSign,
+  FaCode,
+  FaPercentage,
+  FaTags,
+  FaEye,
+  FaEyeSlash,
+} from "react-icons/fa";
+import { v4 as uuidv4 } from "uuid";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Navbar from "./SuperAdminNav";
 
 const AddMasterAdmin = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [budget, setBudget] = useState('');
-  const [status, setStatus] = useState('active');
-  const [masterCode, setMasterCode] = useState('');
-  const [mcxBrokerageType, setMcxBrokerageType] = useState('');
-  const [mcxBrokerage, setMcxBrokerage] = useState('');
-  const [shareBrokerage, setShareBrokerage] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [budget, setBudget] = useState("");
+  const [status, setStatus] = useState("active");
+  const [masterCode, setMasterCode] = useState("");
+  const [mcxBrokerageType, setMcxBrokerageType] = useState("");
+  const [mcxBrokerage, setMcxBrokerage] = useState("");
+  const [shareBrokerage, setShareBrokerage] = useState("");
+  const [pattiPercentage, setPattiPercentage] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setLoading(true);
 
-    const token = localStorage.getItem('superAdminToken');
+    const token = localStorage.getItem("superAdminToken");
 
     const data = {
       username,
@@ -33,31 +42,36 @@ const AddMasterAdmin = () => {
       master_code: masterCode,
       mcx_brokerage_type: mcxBrokerageType,
       mcx_brokerage: mcxBrokerageType ? parseFloat(mcxBrokerage) : null,
-      share_brokerage: parseFloat(shareBrokerage)
+      share_brokerage: parseFloat(shareBrokerage),
+      pattiPercentage: parseFloat(pattiPercentage),
     };
 
     try {
-      const response = await axios.post(
-        'http://16.16.64.168:5000/api/var/superAdmin/add-masterAdmin',
+      const { data: response } = await axios.post(
+        "http://13.51.178.27:5000/api/var/superAdmin/add-masterAdmin",
         data,
         {
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
-      toast.success('Master Admin added successfully!');
-      // Clear form fields here
-      setUsername('');
-      setPassword('');
-      setBudget('');
-      setMasterCode('');
-      setMcxBrokerageType('');
-      setMcxBrokerage('');
-      setShareBrokerage('');
+
+      toast.success("Master Admin added successfully!");
+      // Clear form fields on successful submission
+      setUsername("");
+      setPassword("");
+      setBudget("");
+      setMasterCode("");
+      setMcxBrokerageType("");
+      setMcxBrokerage("");
+      setShareBrokerage("");
+      setPattiPercentage("");
     } catch (err) {
-      toast.error(`Error: ${err.message}`);
+      const errorMessage = err.response?.data?.message || err.message;
+      toast.error(`Error: ${errorMessage}`);
+      console.error("Error adding master admin:", errorMessage);
     } finally {
       setLoading(false);
     }
@@ -70,7 +84,7 @@ const AddMasterAdmin = () => {
   };
 
   const togglePasswordVisibility = () => {
-    setShowPassword(prev => !prev);
+    setShowPassword((prev) => !prev);
   };
 
   return (
@@ -78,7 +92,9 @@ const AddMasterAdmin = () => {
       <Navbar />
       <div className="flex items-center justify-center min-h-screen bg-gray-100 mt-8">
         <div className="p-6 max-w-4xl w-full bg-white shadow-lg rounded-lg">
-          <h1 className="text-2xl font-bold mb-4 text-center">Add Master Admin</h1>
+          <h1 className="text-2xl font-bold mb-4 text-center">
+            Add Master Admin
+          </h1>
           <div className="bg-gray-100 p-6 rounded-lg shadow-md">
             <form onSubmit={handleSubmit} className="grid grid-cols-6 gap-4">
               <div className="col-span-6 sm:col-span-3">
@@ -109,7 +125,7 @@ const AddMasterAdmin = () => {
                   <span>Password</span>
                 </label>
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -165,7 +181,7 @@ const AddMasterAdmin = () => {
                     <input
                       type="radio"
                       value="per_crore"
-                      checked={mcxBrokerageType === 'per_crore'}
+                      checked={mcxBrokerageType === "per_crore"}
                       onChange={(e) => setMcxBrokerageType(e.target.value)}
                       className="form-radio"
                     />
@@ -175,7 +191,7 @@ const AddMasterAdmin = () => {
                     <input
                       type="radio"
                       value="per_sauda"
-                      checked={mcxBrokerageType === 'per_sauda'}
+                      checked={mcxBrokerageType === "per_sauda"}
                       onChange={(e) => setMcxBrokerageType(e.target.value)}
                       className="form-radio"
                     />
@@ -216,17 +232,42 @@ const AddMasterAdmin = () => {
                 />
               </div>
 
+              <div className="col-span-6 sm:col-span-3 mt-3">
+                <label className="flex items-center space-x-2 font-semibold mb-1">
+                  <FaTags className="text-gray-600" />
+                  <span>Patti (%)</span>
+                </label>
+                <input
+                  type="number"
+                  placeholder="Patti %"
+                  value={pattiPercentage}
+                  onChange={(e) => setPattiPercentage(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded"
+                  required
+                />
+              </div>
+
               <button
                 type="submit"
                 className="col-span-6 py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600"
                 disabled={loading}
               >
-                {loading ? 'Submitting...' : 'Submit'}
+                {loading ? "Submitting..." : "Submit"}
               </button>
             </form>
           </div>
 
-          <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
+          <ToastContainer
+            position="top-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+          />
         </div>
       </div>
     </>

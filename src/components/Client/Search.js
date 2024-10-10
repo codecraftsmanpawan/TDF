@@ -1,35 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
-import { TextField, Autocomplete, CircularProgress, Typography, IconButton } from '@mui/material';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faMinus, faEye } from '@fortawesome/free-solid-svg-icons';
-import TopNavbar from './TopNavbar';
-import BottomNav from './BottomNav';
-import Sidebar from './SideBar';
-import Spinner from './Spinner';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { jwtDecode } from "jwt-decode";
+import {
+  TextField,
+  Autocomplete,
+  CircularProgress,
+  Typography,
+  IconButton,
+} from "@mui/material";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus, faMinus, faEye } from "@fortawesome/free-solid-svg-icons";
+import TopNavbar from "./TopNavbar";
+import BottomNav from "./BottomNav";
+import Sidebar from "./SideBar";
+import Spinner from "./Spinner";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
 
 const StockSearch = () => {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [stocks, setStocks] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [blockedStocks, setBlockedStocks] = useState([]); // Blocked stocks state
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [isToggled, setIsToggled] = useState(false);
 
   // Fetch blocked stocks
   useEffect(() => {
     const fetchBlockedStocks = async () => {
       try {
-        const response = await axios.get('http://16.16.64.168:5000/api/var/Wishlist/blockstocks');
-        setBlockedStocks(response.data.map((stock) => stock.symbol)); 
+        const response = await axios.get(
+          "http://13.51.178.27:5000/api/var/Wishlist/blockstocks"
+        );
+        setBlockedStocks(response.data.map((stock) => stock.symbol));
       } catch (error) {
-        console.error('Error fetching blocked stocks:', error);
+        console.error("Error fetching blocked stocks:", error);
       }
     };
 
@@ -38,10 +46,10 @@ const StockSearch = () => {
 
   useEffect(() => {
     const fetchWishlist = async () => {
-      const token = localStorage.getItem('StocksUsertoken');
+      const token = localStorage.getItem("StocksUsertoken");
 
       if (!token) {
-        setError('Token is missing');
+        setError("Token is missing");
         return;
       }
 
@@ -50,15 +58,18 @@ const StockSearch = () => {
         const userId = decodedToken.id;
 
         if (!userId) {
-          setError('User ID is missing in the token');
+          setError("User ID is missing in the token");
           return;
         }
 
-        const wishlistResponse = await axios.get(`http://16.16.64.168:5000/api/var/client/wishlist/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const wishlistResponse = await axios.get(
+          `http://13.51.178.27:5000/api/var/client/wishlist/${userId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         if (wishlistResponse.data.items) {
           setWishlist(wishlistResponse.data.items);
@@ -67,7 +78,7 @@ const StockSearch = () => {
         if (error.response && error.response.status === 404) {
           setWishlist([]);
         } else {
-          setError('Error fetching wishlist data');
+          setError("Error fetching wishlist data");
         }
       }
     };
@@ -79,10 +90,10 @@ const StockSearch = () => {
     if (searchTerm.trim()) {
       setLoading(true);
       axios
-        .get('http://16.16.64.168:5000/api/var/client/stocks/search', {
+        .get("http://13.51.178.27:5000/api/var/client/stocks/search", {
           params: { name: searchTerm },
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('StocksUsertoken')}`,
+            Authorization: `Bearer ${localStorage.getItem("StocksUsertoken")}`,
           },
         })
         .then((response) => {
@@ -90,12 +101,12 @@ const StockSearch = () => {
             (stock) => !blockedStocks.includes(stock.name)
           );
           setStocks(filteredStocks);
-          setError(filteredStocks.length === 0 ? 'No stocks found.' : '');
+          setError(filteredStocks.length === 0 ? "No stocks found." : "");
           setLoading(false);
         })
         .catch((err) => {
-          setError('Error fetching stocks');
-          console.error('Error searching stocks:', err);
+          setError("Error fetching stocks");
+          console.error("Error searching stocks:", err);
           setLoading(false);
         });
     }
@@ -106,10 +117,10 @@ const StockSearch = () => {
   };
 
   const handleAddToWishlist = async (stock) => {
-    const token = localStorage.getItem('StocksUsertoken');
+    const token = localStorage.getItem("StocksUsertoken");
 
     if (!token) {
-      toast.error('User is not authenticated');
+      toast.error("User is not authenticated");
       return;
     }
 
@@ -117,7 +128,7 @@ const StockSearch = () => {
 
     try {
       const response = await axios.post(
-        'http://16.16.64.168:5000/api/var/client/wishlist/add',
+        "http://13.51.178.27:5000/api/var/client/wishlist/add",
         {
           userId,
           item: {
@@ -131,43 +142,51 @@ const StockSearch = () => {
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
         }
       );
 
       toast.success(response.data.message || `Added ${stock.name} to wishlist`);
       setWishlist((prevWishlist) => [...prevWishlist, stock]);
-
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Error adding stock to wishlist');
+      toast.error(
+        error.response?.data?.message || "Error adding stock to wishlist"
+      );
       // console.error('Error adding stock to wishlist:', error);
     }
   };
 
   const handleRemoveFromWishlist = (itemId) => {
-    const token = localStorage.getItem('StocksUsertoken');
+    const token = localStorage.getItem("StocksUsertoken");
 
     if (!token) {
-      toast.error('Token is missing');
+      toast.error("Token is missing");
       return;
     }
 
     const { id: userId } = jwtDecode(token);
 
     axios
-      .delete(`http://16.16.64.168:5000/api/var/client/wishlist/remove/${userId}/${itemId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      .delete(
+        `http://13.51.178.27:5000/api/var/client/wishlist/remove/${userId}/${itemId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
       .then((response) => {
-        toast.success(response.data.message || 'Removed from wishlist');
-        setWishlist((prevWishlist) => prevWishlist.filter((item) => item.InstrumentIdentifier !== itemId));
+        toast.success(response.data.message || "Removed from wishlist");
+        setWishlist((prevWishlist) =>
+          prevWishlist.filter((item) => item.InstrumentIdentifier !== itemId)
+        );
       })
       .catch((error) => {
-        console.error('Error removing stock from wishlist:', error);
-        toast.error(error.response?.data?.message || 'Error removing stock from wishlist');
+        console.error("Error removing stock from wishlist:", error);
+        toast.error(
+          error.response?.data?.message || "Error removing stock from wishlist"
+        );
       });
   };
 
@@ -176,16 +195,18 @@ const StockSearch = () => {
   };
 
   const isInWishlist = (instrumentIdentifier) => {
-    return wishlist.some((item) => item.instrumentIdentifier === instrumentIdentifier);
+    return wishlist.some(
+      (item) => item.instrumentIdentifier === instrumentIdentifier
+    );
   };
 
   return (
-    <div className="min-h-screen w-screen bg-gray-100 flex flex-col">
+    <div className="min-h-screen w-screen bg-black to-gray-800 flex flex-col">
       <TopNavbar toggleSidebar={toggleView} />
       <Sidebar isOpen={isToggled} closeSidebar={toggleView} />
 
       <div className="flex-grow p-2 lg:p-4">
-        <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+        <div className="max-w-4xl mx-auto bg-black to-gray-800 p-6 rounded-lg shadow-lg">
           <Autocomplete
             freeSolo
             options={[]}
@@ -197,10 +218,11 @@ const StockSearch = () => {
                 variant="outlined"
                 fullWidth
                 size="small"
-                className="mb-6"
+                className="mb-6 text-gray-100"
                 InputProps={{
                   ...params.InputProps,
-                  className: 'bg-white rounded-lg border-2 border-blue-300 focus:border-blue-600 shadow-sm mb-4',
+                  className:
+                    "bg-gradient-to-b from-gray-700 to-gray-800 rounded-lg border-2 border-gray-200 focus:border-gray-200 shadow-sm mb-4 text-gray-100",
                   endAdornment: (
                     <>
                       {loading ? <CircularProgress size={20} /> : null}
@@ -209,43 +231,61 @@ const StockSearch = () => {
                   ),
                 }}
                 InputLabelProps={{
-                  className: 'text-blue-700 font-medium',
+                  className: "text-gray-200 font-medium",
                 }}
               />
             )}
-            noOptionsText={loading ? <CircularProgress size={20} /> : error || 'No results found'}
+            noOptionsText={
+              loading ? (
+                <CircularProgress size={20} />
+              ) : (
+                error || "No results found"
+              )
+            }
             filterOptions={() => []}
             PaperComponent={({ children }) => (
-              <div className="bg-white border border-blue-300 rounded-lg shadow-lg">{children}</div>
+              <div className="bg-gradient-to-b from-gray-700 to-gray-800 border border-gray-300 rounded-lg shadow-lg">
+                {children}
+              </div>
             )}
           />
           {!loading && !error && stocks.length === 0 && (
-            <Typography className="text-blue-600 mb-4 mt-8 text-center font-medium">No stocks found.</Typography>
+            <Typography className="text-gray-200 mb-4 mt-8 text-center font-medium">
+              No stocks found.
+            </Typography>
           )}
 
           <div className="max-h-[calc(100vh-250px)] overflow-y-auto">
             {stocks.length > 0 && (
               <div>
-                <Typography variant="body2" className="text-blue-800 mb-4 font-medium">
+                <Typography
+                  variant="body2"
+                  className="text-gray-100 mb-6 font-medium"
+                >
                   Search Results:
                 </Typography>
-          <ul className="list-none">
+                <ul className="list-none mt-3">
                   {stocks.map((stock, index) => (
                     <li
                       key={`${stock.InstrumentIdentifier}-${index}`}
                       className={`flex justify-between items-center mb-4 p-4 rounded-lg shadow-sm ${
-                        isInWishlist(stock.InstrumentIdentifier) ? 'bg-blue-100' : 'bg-gray-50'
+                        isInWishlist(stock.InstrumentIdentifier)
+                          ? "bg-gradient-to-b from-gray-700 to-gray-900"
+                          : "bg-gradient-to-b from-gray-900 to-gray-700"
                       }`}
                     >
                       <div>
-                        <Typography className="text-blue-800 text-lg font-medium">{stock.name}</Typography>
-                        <Typography variant="body2" className="text-gray-600">
+                        <Typography className="text-blue-100 text-lg font-medium">
+                          {stock.name}
+                        </Typography>
+                        <Typography variant="body2" className="text-gray-200">
                           {stock.Exchange}
                         </Typography>
-                        <Typography variant="body2" className="text-gray-600">
-  {stock.InstrumentIdentifier.match(/(\d{2}[A-Z]{3}\d{4})/)?.[0] || ''}
-</Typography>
-
+                        <Typography variant="body2" className="text-gray-200">
+                          {stock.InstrumentIdentifier.match(
+                            /(\d{2}[A-Z]{3}\d{4})/
+                          )?.[0] || ""}
+                        </Typography>
                       </div>
                       <div className="flex items-center space-x-3">
                         <IconButton
@@ -258,12 +298,14 @@ const StockSearch = () => {
                         <IconButton
                           className={`flex items-center hover:text-red-600 ${
                             isInWishlist(stock.InstrumentIdentifier)
-                              ? 'text-red-600'
-                              : 'text-gray-400'
+                              ? "text-red-600"
+                              : "text-gray-400"
                           }`}
                           onClick={() =>
                             isInWishlist(stock.InstrumentIdentifier)
-                              ? handleRemoveFromWishlist(stock.InstrumentIdentifier)
+                              ? handleRemoveFromWishlist(
+                                  stock.InstrumentIdentifier
+                                )
                               : handleAddToWishlist(stock)
                           }
                         >

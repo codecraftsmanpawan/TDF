@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Line } from 'react-chartjs-2';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,15 +9,15 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend
-} from 'chart.js';
-import { jwtDecode } from 'jwt-decode';
-import { useNavigate } from 'react-router-dom';
-import { FaArrowLeft } from 'react-icons/fa';
-import TopNavbar from './TopNavbar';
-import BottomNav from './BottomNav';
-import Sidebar from './SideBar';
-import Spinner from './Spinner';  
+  Legend,
+} from "chart.js";
+import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
+import TopNavbar from "./TopNavbar";
+import BottomNav from "./BottomNav";
+import Sidebar from "./SideBar";
+import Spinner from "./Spinner";
 // Register ChartJS components
 ChartJS.register(
   CategoryScale,
@@ -34,20 +34,20 @@ function TradeChart() {
   const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
   const [isToggled, setIsToggled] = useState(false);
-    const toggleView = () => {
-        setIsToggled(!isToggled);
-    };
+  const toggleView = () => {
+    setIsToggled(!isToggled);
+  };
   useEffect(() => {
-    const getToken = () => localStorage.getItem('StocksUsertoken');
-    
+    const getToken = () => localStorage.getItem("StocksUsertoken");
+
     const fetchUserId = () => {
       const token = getToken();
       if (token) {
         try {
           const decodedToken = jwtDecode(token);
-          setUserId(decodedToken.id); 
+          setUserId(decodedToken.id);
         } catch (error) {
-          console.error('Error decoding token:', error);
+          console.error("Error decoding token:", error);
         }
       }
     };
@@ -59,10 +59,12 @@ function TradeChart() {
     const fetchChartData = async () => {
       if (userId) {
         try {
-          const response = await axios.get(`http://16.16.64.168:5000/api/var/client/trades/chart/${userId}`);
+          const response = await axios.get(
+            `http://13.51.178.27:5000/api/var/client/trades/chart/${userId}`
+          );
           setChartData(response.data.chartData);
         } catch (error) {
-          console.error('Error fetching chart data:', error);
+          console.error("Error fetching chart data:", error);
         }
       }
     };
@@ -75,7 +77,7 @@ function TradeChart() {
     const dates = [];
     const currentDate = new Date(startDate);
     while (currentDate <= new Date(endDate)) {
-      dates.push(currentDate.toISOString().split('T')[0]);
+      dates.push(currentDate.toISOString().split("T")[0]);
       currentDate.setDate(currentDate.getDate() + 1);
     }
     return dates;
@@ -86,39 +88,50 @@ function TradeChart() {
     if (chartData.length === 0) return { labels: [], datasets: [] };
 
     // Find the date range
-    const allDates = chartData.map(entry => entry.date);
-    const startDate = Math.min(...allDates.map(date => new Date(date).getTime()));
-    const endDate = Math.max(...allDates.map(date => new Date(date).getTime()));
+    const allDates = chartData.map((entry) => entry.date);
+    const startDate = Math.min(
+      ...allDates.map((date) => new Date(date).getTime())
+    );
+    const endDate = Math.max(
+      ...allDates.map((date) => new Date(date).getTime())
+    );
     const dateRange = generateDateRange(startDate, endDate);
 
     // Prepare data with missing dates filled
     const dataMap = {};
-    chartData.forEach(entry => {
-      dataMap[entry.date] = { totalQuantity: entry.totalQuantity, totalPrice: entry.totalPrice };
+    chartData.forEach((entry) => {
+      dataMap[entry.date] = {
+        totalQuantity: entry.totalQuantity,
+        totalPrice: entry.totalPrice,
+      };
     });
 
     const labels = dateRange;
-    const totalQuantityData = dateRange.map(date => dataMap[date]?.totalQuantity || 0);
-    const totalPriceData = dateRange.map(date => dataMap[date]?.totalPrice || 0);
+    const totalQuantityData = dateRange.map(
+      (date) => dataMap[date]?.totalQuantity || 0
+    );
+    const totalPriceData = dateRange.map(
+      (date) => dataMap[date]?.totalPrice || 0
+    );
 
     return {
       labels,
       datasets: [
         {
-          label: 'Total Quantity',
+          label: "Total Quantity",
           data: totalQuantityData,
-          borderColor: 'rgba(75, 192, 192, 1)',
-          backgroundColor: 'rgba(75, 192, 192, 0.2)',
-          borderWidth: 1
+          borderColor: "rgba(75, 192, 192, 1)",
+          backgroundColor: "rgba(75, 192, 192, 0.2)",
+          borderWidth: 1,
         },
         {
-          label: 'Total Price',
+          label: "Total Price",
           data: totalPriceData,
-          borderColor: 'rgba(153, 102, 255, 1)',
-          backgroundColor: 'rgba(153, 102, 255, 0.2)',
-          borderWidth: 1
-        }
-      ]
+          borderColor: "rgba(153, 102, 255, 1)",
+          backgroundColor: "rgba(153, 102, 255, 0.2)",
+          borderWidth: 1,
+        },
+      ],
     };
   };
 
@@ -126,41 +139,41 @@ function TradeChart() {
 
   const options = {
     responsive: true,
-    maintainAspectRatio: false, 
+    maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top',
+        position: "top",
       },
       tooltip: {
         callbacks: {
-          label: function(tooltipItem) {
+          label: function (tooltipItem) {
             return `${tooltipItem.dataset.label}: ${tooltipItem.raw}`;
-          }
-        }
-      }
+          },
+        },
+      },
     },
     scales: {
       x: {
         title: {
           display: true,
-          text: 'Date'
-        }
+          text: "Date",
+        },
       },
       y: {
         title: {
           display: true,
-          text: 'Amount'
-        }
-      }
-    }
+          text: "Amount",
+        },
+      },
+    },
   };
 
   return (
     <div className="flex flex-col h-screen">
       {/* Top Navigation */}
-       <TopNavbar toggleSidebar={toggleView} />
-       <Sidebar isOpen={isToggled} closeSidebar={toggleView} />
-      
+      <TopNavbar toggleSidebar={toggleView} />
+      <Sidebar isOpen={isToggled} closeSidebar={toggleView} />
+
       {/* Main Content */}
       <div className="flex-1 p-6 bg-gray-100 overflow-auto">
         <div className="w-full h-full">
@@ -179,8 +192,6 @@ function TradeChart() {
 }
 
 export default TradeChart;
-
-
 
 // import React, { useState, useEffect } from 'react';
 // import axios from 'axios';
@@ -204,7 +215,7 @@ export default TradeChart;
 //         const fetchClientDetails = async () => {
 //             const config = {
 //                 method: 'get',
-//                 url: `http://16.16.64.168:5000/api/var/client/${userId}`,
+//                 url: `http://13.51.178.27:5000/api/var/client/${userId}`,
 //                 headers: {
 //                     'Authorization': `Bearer ${token}`
 //                 }
@@ -222,7 +233,7 @@ export default TradeChart;
 //         const fetchTrades = async () => {
 //             const config = {
 //                 method: 'get',
-//                 url: `http://16.16.64.168:5000/api/var/client/trades/mcx/${userId}`,
+//                 url: `http://13.51.178.27:5000/api/var/client/trades/mcx/${userId}`,
 //                 headers: {
 //                     'Authorization': `Bearer ${token}`
 //                 }

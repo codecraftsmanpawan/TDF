@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import Navbar from './SuperAdminNav';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import {Link} from 'react-router-dom'
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import Navbar from "./SuperAdminNav";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Link } from "react-router-dom";
 
 const StockTable = () => {
   const [stockData, setStockData] = useState([]);
   const [blockedStocks, setBlockedStocks] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedStock, setSelectedStock] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -17,18 +17,18 @@ const StockTable = () => {
   const fetchStockData = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('superAdminToken');
+      const token = localStorage.getItem("superAdminToken");
       const config = {
-        method: 'get',
-        url: 'http://16.16.64.168:5000/api/var/superAdmin/api/stocks',
-        headers: { 
-          'Authorization': `Bearer ${token}`
-        }
+        method: "get",
+        url: "http://13.51.178.27:5000/api/var/superAdmin/api/stocks",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       };
       const response = await axios.request(config);
       setStockData(response.data);
     } catch (error) {
-      console.error('Error fetching stock data:', error);
+      console.error("Error fetching stock data:", error);
     } finally {
       setLoading(false);
     }
@@ -37,18 +37,18 @@ const StockTable = () => {
   const fetchBlockedStocks = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('superAdminToken');
+      const token = localStorage.getItem("superAdminToken");
       const config = {
-        method: 'get',
-        url: 'http://16.16.64.168:5000/api/var/superAdmin/api/blockStocks',
-        headers: { 
-          'Authorization': `Bearer ${token}`
-        }
+        method: "get",
+        url: "http://13.51.178.27:5000/api/var/superAdmin/api/blockStocks",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       };
       const response = await axios.request(config);
       setBlockedStocks(response.data.stocks); // Adjusted to use response.data.stocks
     } catch (error) {
-      console.error('Error fetching blocked stocks:', error);
+      console.error("Error fetching blocked stocks:", error);
     } finally {
       setLoading(false);
     }
@@ -62,13 +62,15 @@ const StockTable = () => {
 
   useEffect(() => {
     const filtered = stockData
-      .map(stock => ({
+      .map((stock) => ({
         ...stock,
-        isBlocked: blockedStocks.some(blockedStock => blockedStock.symbol === stock.name)
+        isBlocked: blockedStocks.some(
+          (blockedStock) => blockedStock.symbol === stock.name
+        ),
       }))
-      .filter(stock => {
-        const symbol = stock.symbol ? stock.symbol.toLowerCase() : '';
-        const identifier = stock.name ? stock.name.toLowerCase() : '';
+      .filter((stock) => {
+        const symbol = stock.symbol ? stock.symbol.toLowerCase() : "";
+        const identifier = stock.name ? stock.name.toLowerCase() : "";
         const term = searchTerm.toLowerCase();
 
         return symbol.includes(term) || identifier.includes(term);
@@ -100,29 +102,29 @@ const StockTable = () => {
   const handleConfirmBlock = async () => {
     if (!selectedStock) return;
     try {
-      const token = localStorage.getItem('superAdminToken');
+      const token = localStorage.getItem("superAdminToken");
       const data = {
         symbol: selectedStock.name,
-        exchange: selectedStock.Exchange
+        exchange: selectedStock.Exchange,
       };
 
       const config = {
-        method: 'post',
-        url: 'http://16.16.64.168:5000/api/var/superAdmin/api/blockStock',
-        headers: { 
-          'Content-Type': 'application/json', 
-          'Authorization': `Bearer ${token}`
+        method: "post",
+        url: "http://13.51.178.27:5000/api/var/superAdmin/api/blockStock",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        data: JSON.stringify(data)
+        data: JSON.stringify(data),
       };
 
       const response = await axios.request(config);
-      console.log('Block stock added:', response.data);
+      console.log("Block stock added:", response.data);
       toast.success(`Block stock added: ${selectedStock.name}`);
       fetchBlockedStocks();
     } catch (error) {
-      console.error('Error adding block stock:', error);
-      toast.error('Failed to add block stock');
+      console.error("Error adding block stock:", error);
+      toast.error("Failed to add block stock");
     } finally {
       closeModal();
     }
@@ -130,24 +132,24 @@ const StockTable = () => {
 
   const handleDeleteBlock = async (stock) => {
     try {
-      const token = localStorage.getItem('superAdminToken');
+      const token = localStorage.getItem("superAdminToken");
       const symbol = stock.name;
 
       const config = {
-        method: 'delete',
-        url: `http://16.16.64.168:5000/api/var/superAdmin/api/blockStock/${symbol}`,
+        method: "delete",
+        url: `http://13.51.178.27:5000/api/var/superAdmin/api/blockStock/${symbol}`,
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       };
 
       const response = await axios.request(config);
-      console.log('Block stock removed:', response.data);
+      console.log("Block stock removed:", response.data);
       toast.success(`Block stock removed: ${symbol}`);
       fetchBlockedStocks(); // Refresh the list of blocked stocks
     } catch (error) {
-      console.error('Error removing block stock:', error);
-      toast.error('Failed to remove block stock');
+      console.error("Error removing block stock:", error);
+      toast.error("Failed to remove block stock");
     }
   };
 
@@ -192,64 +194,86 @@ const StockTable = () => {
             <tbody>
               {filteredData.length > 0 ? (
                 filteredData.map((stock, index) => (
-                  <tr key={index} className="border-b border-gray-200 hover:bg-gray-100">
-                    <td className="py-3 px-6 text-left text-gray-800">{index + 1}</td>
-                    <td className="py-3 px-6 text-left whitespace-nowrap font-semibold text-gray-800">{stock.name || 'N/A'}</td>
-                    <td className="py-3 px-6 text-left text-gray-700">{stock.Exchange || 'N/A'}</td>
-                    <td className="py-3 px-6 text-left text-gray-700">{stock.BuyPrice || 'N/A'}</td>
-                    <td className="py-3 px-6 text-left text-gray-700">{stock.SellPrice || 'N/A'}</td>
-                    <td className="py-3 px-6 text-left text-gray-700">{stock.High || 'N/A'}</td>
-                    <td className="py-3 px-6 text-left text-gray-700">{stock.Low || 'N/A'}</td>
-                    <td className="py-3 px-6 text-left text-gray-700">{stock.Close || 'N/A'}</td>
+                  <tr
+                    key={index}
+                    className="border-b border-gray-200 hover:bg-gray-100"
+                  >
+                    <td className="py-3 px-6 text-left text-gray-800">
+                      {index + 1}
+                    </td>
+                    <td className="py-3 px-6 text-left whitespace-nowrap font-semibold text-gray-800">
+                      {stock.name || "N/A"}
+                    </td>
                     <td className="py-3 px-6 text-left text-gray-700">
-                      {new Date(stock.expiry).toLocaleString('en-US', {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
+                      {stock.Exchange || "N/A"}
+                    </td>
+                    <td className="py-3 px-6 text-left text-gray-700">
+                      {stock.BuyPrice || "N/A"}
+                    </td>
+                    <td className="py-3 px-6 text-left text-gray-700">
+                      {stock.SellPrice || "N/A"}
+                    </td>
+                    <td className="py-3 px-6 text-left text-gray-700">
+                      {stock.High || "N/A"}
+                    </td>
+                    <td className="py-3 px-6 text-left text-gray-700">
+                      {stock.Low || "N/A"}
+                    </td>
+                    <td className="py-3 px-6 text-left text-gray-700">
+                      {stock.Close || "N/A"}
+                    </td>
+                    <td className="py-3 px-6 text-left text-gray-700">
+                      {new Date(stock.expiry).toLocaleString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
                       })}
                     </td>
-                   <td 
-  className={`py-3 px-6 text-left text-gray-700 ${
-    stock.isBlocked ? 'bg-red-100' : 'bg-green-100'
-  } font-bold uppercase`}
->
-  {stock.isBlocked ? 'Blocked' : 'Active'}
-</td>
+                    <td
+                      className={`py-3 px-6 text-left text-gray-700 ${
+                        stock.isBlocked ? "bg-red-100" : "bg-green-100"
+                      } font-bold uppercase`}
+                    >
+                      {stock.isBlocked ? "Blocked" : "Active"}
+                    </td>
 
-                  <td className="py-3 px-6 text-left">
-  {stock.isBlocked ? (
-    <button
-      onClick={() => handleDeleteBlock(stock)}
-      className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
-    >
-      Unblock
-    </button>
-  ) : (
-    <button
-      onClick={() => openModal(stock)}
-      className="bg-green-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-    >
-      Block
-    </button>
-  )}
-</td>
-<td className="py-3 px-6 text-left">
- <Link
-  to={`/Quantity/Limit/${encodeURIComponent(stock.InstrumentIdentifier)}/${encodeURIComponent(stock.name)}`}
-  className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
->
-  Set 
-</Link>
-
-</td>
-
+                    <td className="py-3 px-6 text-left">
+                      {stock.isBlocked ? (
+                        <button
+                          onClick={() => handleDeleteBlock(stock)}
+                          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                        >
+                          Unblock
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => openModal(stock)}
+                          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          Block
+                        </button>
+                      )}
+                    </td>
+                    <td className="py-3 px-6 text-left">
+                      <Link
+                        to={`/Quantity/Limit/${encodeURIComponent(
+                          stock.InstrumentIdentifier
+                        )}/${encodeURIComponent(stock.name)}`}
+                        className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                      >
+                        Set
+                      </Link>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="11" className="py-3 px-6 text-center text-gray-700">
+                  <td
+                    colSpan="11"
+                    className="py-3 px-6 text-center text-gray-700"
+                  >
                     No stocks found.
                   </td>
                 </tr>

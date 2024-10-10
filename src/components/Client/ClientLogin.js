@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Login = () => {
   const [clientId, setClientId] = useState("");
@@ -22,18 +22,18 @@ const Login = () => {
     myHeaders.append("Content-Type", "application/json");
 
     const raw = JSON.stringify({
-      "username": clientId,
-      "password": password
+      username: clientId,
+      password: password,
     });
 
     const requestOptions = {
       method: "POST",
       headers: myHeaders,
       body: raw,
-      redirect: "follow"
+      redirect: "follow",
     };
 
-    fetch("http://16.16.64.168:5000/api/var/client/clientLogin", requestOptions)
+    fetch("http://13.51.178.27:5000/api/var/client/clientLogin", requestOptions)
       .then((response) => {
         if (response.status === 401) {
           throw new Error("Invalid username or password");
@@ -46,7 +46,7 @@ const Login = () => {
       })
       .then((result) => {
         // Assuming the API returns a token in the result
-        localStorage.setItem('StocksUsertoken', result.token);
+        localStorage.setItem("StocksUsertoken", result.token);
         setLoggedIn(true);
         toast.success("Login successful!");
       })
@@ -70,10 +70,14 @@ const Login = () => {
           <div className="text-white text-xl font-bold">TradingApp</div>
           <ul className="flex space-x-4 text-white">
             <li>
-              <Link to="/superadmin/login" className="hover:underline">SuperAdmin</Link>
+              <Link to="/superadmin/login" className="hover:underline">
+                SuperAdmin
+              </Link>
             </li>
             <li>
-              <Link to="/masteradmin/login" className="hover:underline">MasterAdmin</Link>
+              <Link to="/masteradmin/login" className="hover:underline">
+                MasterAdmin
+              </Link>
             </li>
           </ul>
         </div>
@@ -84,7 +88,9 @@ const Login = () => {
           {error && <p className="text-red-500 text-center mb-4">{error}</p>}
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label className="block text-gray-700 mb-2" htmlFor="clientId">Client ID</label>
+              <label className="block text-gray-700 mb-2" htmlFor="clientId">
+                Client ID
+              </label>
               <input
                 type="text"
                 id="clientId"
@@ -94,7 +100,9 @@ const Login = () => {
               />
             </div>
             <div className="mb-6">
-              <label className="block text-gray-700 mb-2" htmlFor="password">Password</label>
+              <label className="block text-gray-700 mb-2" htmlFor="password">
+                Password
+              </label>
               <input
                 type="password"
                 id="password"

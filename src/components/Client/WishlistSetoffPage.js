@@ -1,22 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import axios from 'axios';
-import { FaChevronUp, FaChevronDown } from 'react-icons/fa';
-import {jwtDecode} from 'jwt-decode'; 
-import TopNavbar from './TopNavbar';
-import BottomNav from './BottomNav';
-import Sidebar from './SideBar';
-import Spinner from './Spinner';  
+import React, { useEffect, useState } from "react";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import axios from "axios";
+import { FaChevronUp, FaChevronDown } from "react-icons/fa";
+import { jwtDecode } from "jwt-decode";
+import TopNavbar from "./TopNavbar";
+import BottomNav from "./BottomNav";
+import Sidebar from "./SideBar";
+import Spinner from "./Spinner";
 
 const WishlistSetoffPage = () => {
   const [wishlistItems, setWishlistItems] = useState([]);
   const [userId, setUserId] = useState(null);
- const [isToggled, setIsToggled] = useState(false);
-    const toggleView = () => {
-        setIsToggled(!isToggled);
-    };
+  const [isToggled, setIsToggled] = useState(false);
+  const toggleView = () => {
+    setIsToggled(!isToggled);
+  };
   useEffect(() => {
-    const token = localStorage.getItem('StocksUsertoken');
+    const token = localStorage.getItem("StocksUsertoken");
 
     // Check if token exists
     if (token) {
@@ -35,13 +35,13 @@ const WishlistSetoffPage = () => {
   // Fetch wishlist items from API
   useEffect(() => {
     const fetchWishlistItems = async () => {
-      if (!userId) return; 
+      if (!userId) return;
 
       try {
         const config = {
-          method: 'get',
+          method: "get",
           maxBodyLength: Infinity,
-          url: `http://16.16.64.168:5000/api/var/Wishlist/wishlist/${userId}`, 
+          url: `http://13.51.178.27:5000/api/var/Wishlist/wishlist/${userId}`,
           headers: {},
         };
 
@@ -49,7 +49,9 @@ const WishlistSetoffPage = () => {
         // console.log('Fetched Wishlist:', response.data);
 
         // Sort items based on serial number and set state
-        const sortedItems = response.data.items.sort((a, b) => a.serial - b.serial);
+        const sortedItems = response.data.items.sort(
+          (a, b) => a.serial - b.serial
+        );
         setWishlistItems(sortedItems);
       } catch (error) {
         // console.error('Error fetching wishlist data:', error);
@@ -57,12 +59,12 @@ const WishlistSetoffPage = () => {
     };
 
     fetchWishlistItems();
-  }, [userId]); 
+  }, [userId]);
 
   // Function to extract the date part from instrumentIdentifier
   const extractDateFromIdentifier = (identifier) => {
     const match = identifier.match(/\d{2}[A-Z]{3}\d{4}/);
-    return match ? match[0] : '';
+    return match ? match[0] : "";
   };
 
   // Handle drag-and-drop reorder
@@ -75,10 +77,13 @@ const WishlistSetoffPage = () => {
 
     setWishlistItems(items);
 
-    const newOrder = items.map(item => item.instrumentIdentifier); 
+    const newOrder = items.map((item) => item.instrumentIdentifier);
 
     try {
-      await axios.post(`http://16.16.64.168:5000/api/var/Wishlist/wishlist/${userId}/reorder`, { newOrder });
+      await axios.post(
+        `http://13.51.178.27:5000/api/var/Wishlist/wishlist/${userId}/reorder`,
+        { newOrder }
+      );
       // console.log('Wishlist order updated successfully');
     } catch (error) {
       // console.error('Error updating wishlist order:', error);
@@ -86,7 +91,7 @@ const WishlistSetoffPage = () => {
   };
 
   return (
- <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen">
       <TopNavbar toggleSidebar={toggleView} />
       <div className="flex flex-grow">
         <Sidebar isOpen={isToggled} closeSidebar={toggleView} />
@@ -101,7 +106,11 @@ const WishlistSetoffPage = () => {
                   className="p-4 bg-gray-100 rounded shadow"
                 >
                   {wishlistItems.map((item, index) => (
-                    <Draggable key={item.instrumentIdentifier} draggableId={item.instrumentIdentifier} index={index}>
+                    <Draggable
+                      key={item.instrumentIdentifier}
+                      draggableId={item.instrumentIdentifier}
+                      index={index}
+                    >
                       {(provided) => (
                         <li
                           ref={provided.innerRef}
@@ -117,12 +126,19 @@ const WishlistSetoffPage = () => {
                               {index + 1}.
                             </div>
                             <div className="flex-grow">
-                              <div className="font-medium text-lg">{item.name}</div>
-                              <div className="text-gray-500">({item.exchange})</div>
+                              <div className="font-medium text-lg">
+                                {item.name}
+                              </div>
+                              <div className="text-gray-500">
+                                ({item.exchange})
+                              </div>
                             </div>
                             <div className="text-sm text-gray-400 flex flex-col items-center">
                               <FaChevronUp className="mb-1" />
-                              Expiry: {extractDateFromIdentifier(item.instrumentIdentifier)}
+                              Expiry:{" "}
+                              {extractDateFromIdentifier(
+                                item.instrumentIdentifier
+                              )}
                               <FaChevronDown className="mt-1" />
                             </div>
                           </div>

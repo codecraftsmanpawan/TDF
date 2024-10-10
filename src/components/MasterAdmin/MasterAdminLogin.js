@@ -1,44 +1,49 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import axios from 'axios';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import axios from "axios";
 
 function MasterAdminLogin() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault(); // Prevent default form submission
 
     if (!username || !password) {
-      toast.error('Username and Password are required');
+      toast.error("Username and Password are required");
       return;
     }
 
     try {
-      const response = await axios.post("http://16.16.64.168:5000/api/var/masterAdmin/masterAdminLogin", { username, password }, {
-        headers: {
-          "Content-Type": "application/json"
+      const response = await axios.post(
+        "http://13.51.178.27:5000/api/var/masterAdmin/masterAdminLogin",
+        { username, password },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
 
       if (response.status === 200) {
         // Store the token in local storage
-        localStorage.setItem('masterAdminToken', response.data.token);
-        toast.success('Login successful');
+        localStorage.setItem("masterAdminToken", response.data.token);
+        toast.success("Login successful");
         // Navigate to the master admin dashboard
-        navigate('/masteradmin/dashboard', { state: { fromLogin: true } });
+        navigate("/masteradmin/dashboard", { state: { fromLogin: true } });
       } else {
         toast.error(`Login failed: ${response.data.message}`);
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'An unexpected error occurred';
-      
-      if (errorMessage === 'Connect to Super Admin for activation') {
+      const errorMessage =
+        error.response?.data?.message || "An unexpected error occurred";
+
+      if (errorMessage === "Connect to Super Admin for activation") {
         // Redirect to 404 page
-        navigate('/master/404');
+        navigate("/master/404");
       } else {
         toast.error(`Error: ${errorMessage}`);
       }
@@ -52,23 +57,33 @@ function MasterAdminLogin() {
           <div className="text-white text-xl font-bold">TradingApp</div>
           <ul className="flex space-x-4 text-white">
             <li>
-              <Link to="/client/login" className="hover:underline">Client</Link>
+              <Link to="/client/login" className="hover:underline">
+                Client
+              </Link>
             </li>
             <li>
-              <Link to="/superadmin/login" className="hover:underline">SuperAdmin</Link>
+              <Link to="/superadmin/login" className="hover:underline">
+                SuperAdmin
+              </Link>
             </li>
             <li>
-              <Link to="/masteradmin/login" className="hover:underline">MasterAdmin</Link>
+              <Link to="/masteradmin/login" className="hover:underline">
+                MasterAdmin
+              </Link>
             </li>
           </ul>
         </div>
       </nav>
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="bg-white p-8 rounded shadow-md w-full max-w-sm">
-          <h2 className="text-2xl font-bold mb-6 text-center">Master Admin Login</h2>
+          <h2 className="text-2xl font-bold mb-6 text-center">
+            Master Admin Login
+          </h2>
           <form onSubmit={handleLogin}>
             <div className="mb-4">
-              <label className="block text-gray-700 mb-2" htmlFor="username">Username</label>
+              <label className="block text-gray-700 mb-2" htmlFor="username">
+                Username
+              </label>
               <input
                 type="text"
                 id="username"
@@ -79,7 +94,9 @@ function MasterAdminLogin() {
               />
             </div>
             <div className="mb-6">
-              <label className="block text-gray-700 mb-2" htmlFor="password">Password</label>
+              <label className="block text-gray-700 mb-2" htmlFor="password">
+                Password
+              </label>
               <input
                 type="password"
                 id="password"
