@@ -201,7 +201,7 @@ const StockSearch = () => {
   };
 
   return (
-    <div className="min-h-screen w-screen bg-black to-gray-800 flex flex-col">
+    <div className="min-h-screen w-screen bg-gradient-to-b from-gray-700 to-gray-800 to-gray-800 flex flex-col">
       <TopNavbar toggleSidebar={toggleView} />
       <Sidebar isOpen={isToggled} closeSidebar={toggleView} />
 
@@ -218,7 +218,7 @@ const StockSearch = () => {
                 variant="outlined"
                 fullWidth
                 size="small"
-                className="mb-6 text-gray-100"
+                className="mb-6 text-white"
                 InputProps={{
                   ...params.InputProps,
                   className:

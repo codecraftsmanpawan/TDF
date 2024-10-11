@@ -112,26 +112,26 @@ const StockDetailPage = () => {
     : "N/A";
 
   return (
-    <div className="p-6 max-w-lg mx-auto bg-blue-50 min-h-screen">
+    <div className="p-6 max-w-lg mx-auto bg-gradient-to-b from-gray-700 to-gray-800 min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <button className="text-blue-500" onClick={() => navigate(-1)}>
+        <button className="text-white" onClick={() => navigate(-1)}>
           &larr; Back
         </button>
-        <h1 className="text-lg font-semibold text-blue-700">{name}</h1>
-        <button className="text-gray-500">•••</button>
+        <h1 className="text-lg font-semibold  text-white">{name}</h1>
+        <button className="text-white">•••</button>
       </div>
 
       {/* Stock Overview */}
-      <div className="mb-4 bg-white p-4 rounded-lg shadow">
-        <div className="flex items-center justify-between">
+      <div className="mb-4 bg-gradient-to-b from-gray-700 to-gray-800 p-4 rounded-lg shadow text-white">
+        <div className="flex items-center justify-between text-white">
           <div className="flex items-center">
             <div className="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center text-lg font-bold text-blue-700">
               {name.slice(0, 2)}
             </div>
-            <div className="ml-4">
-              <p className="font-semibold text-blue-700">{name}</p>
-              <p className="text-gray-500 text-sm">{Exchange}</p>
+            <div className="ml-4 ">
+              <p className="font-semibold text-white">{name}</p>
+              <p className="text-white text-sm">{Exchange}</p>
             </div>
           </div>
           <div className="text-right">
@@ -173,37 +173,37 @@ const StockDetailPage = () => {
 
       {/* Stock Details */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow text-center">
-          <p className="text-gray-500">Opening Price</p>
-          <p className="font-semibold">₹{Open.toFixed(2)}</p>
+        <div className="bg-gradient-to-b from-gray-700 to-gray-800 p-4 rounded-lg shadow text-center">
+          <p className="text-white">Opening Price</p>
+          <p className="font-semibold text-white">₹{Open.toFixed(2)}</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow text-center">
-          <p className="text-gray-500">Closing Price</p>
-          <p className="font-semibold">₹{Close.toFixed(2)}</p>
+        <div className="bg-gradient-to-b from-gray-700 to-gray-800 p-4 rounded-lg shadow text-center">
+          <p className="text-white">Closing Price</p>
+          <p className="font-semibold text-white">₹{Close.toFixed(2)}</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow text-center">
-          <p className="text-gray-500">Buy Price</p>
+        <div className="bg-gradient-to-b from-gray-700 to-gray-800 p-4 rounded-lg shadow text-center">
+          <p className="text-white">Buy Price</p>
           <p className="font-semibold text-green-500">₹{BuyPrice.toFixed(2)}</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow text-center">
-          <p className="text-gray-500">Sell Price</p>
+        <div className="bg-gradient-to-b from-gray-700 to-gray-800 p-4 rounded-lg shadow text-center">
+          <p className="text-white">Sell Price</p>
           <p className="font-semibold text-red-500">₹{SellPrice.toFixed(2)}</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow text-center">
-          <p className="text-gray-500">High</p>
+        <div className="bg-gradient-to-b from-gray-700 to-gray-800 p-4 rounded-lg shadow text-center">
+          <p className="text-white">High</p>
           <p className="font-semibold text-green-500">₹{High.toFixed(2)}</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow text-center">
-          <p className="text-gray-500">Low</p>
+        <div className="bg-gradient-to-b from-gray-700 to-gray-800 p-4 rounded-lg shadow text-center">
+          <p className="text-white">Low</p>
           <p className="font-semibold text-red-500">₹{Low.toFixed(2)}</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow text-center">
-          <p className="text-gray-500">Lot Size</p>
-          <p className="font-semibold">{QuotationLot}</p>
+        <div className="bg-gradient-to-b from-gray-700 to-gray-800 p-4 rounded-lg shadow text-center">
+          <p className="text-white">Lot Size</p>
+          <p className="font-semibold text-white">{QuotationLot}</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow text-center">
-          <p className="text-gray-500">Expiry Date</p>
-          <p className="font-semibold">{formattedExpiryDate}</p>
+        <div className="bg-gradient-to-b from-gray-700 to-gray-800 p-4 rounded-lg shadow text-center">
+          <p className="text-white">Expiry Date</p>
+          <p className="font-semibold text-white">{formattedExpiryDate}</p>
         </div>
       </div>
     </div>

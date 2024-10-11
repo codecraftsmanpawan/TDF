@@ -336,11 +336,11 @@ const StockPortfolio = () => {
 
   return (
     <>
-      <div className="fixed top-0 left-0 right-0 z-50 bg-black shadow-md">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-gray-700 to-gray-800 shadow-md">
         <TopNavbar toggleSidebar={toggleView} />
         <Sidebar isOpen={isToggled} closeSidebar={toggleView} />
       </div>
-      <div className="container mx-auto p-2 mt-16 bg-black">
+      <div className="container mx-auto p-2 mt-16 bg-gradient-to-b from-gray-700 to-gray-800">
         <h2 className="text-2xl font-bold mb-4 mt-4 text-white">
           Stock Portfolio
         </h2>

@@ -91,7 +91,7 @@ const WishlistSetoffPage = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-700 to-gray-800">
       <TopNavbar toggleSidebar={toggleView} />
       <div className="flex flex-grow">
         <Sidebar isOpen={isToggled} closeSidebar={toggleView} />
@@ -103,7 +103,7 @@ const WishlistSetoffPage = () => {
                 <ul
                   {...provided.droppableProps}
                   ref={provided.innerRef}
-                  className="p-4 bg-gray-100 rounded shadow"
+                  className="p-4 bg-gradient-to-b from-gray-700 to-gray-800 rounded shadow"
                 >
                   {wishlistItems.map((item, index) => (
                     <Draggable
@@ -116,24 +116,24 @@ const WishlistSetoffPage = () => {
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className="bg-white shadow-md rounded p-4 mb-4 flex justify-between items-center"
+                          className="bg-gradient-to-b from-gray-700 to-gray-800 shadow-md rounded p-4 mb-4 flex justify-between items-center"
                           style={{
                             ...provided.draggableProps.style,
                           }}
                         >
                           <div className="flex items-center justify-between w-full">
-                            <div className="mr-4 text-lg font-semibold">
+                            <div className="mr-4 text-lg  text-white font-semibold">
                               {index + 1}.
                             </div>
                             <div className="flex-grow">
-                              <div className="font-medium text-lg">
+                              <div className="font-medium text-lg text-white">
                                 {item.name}
                               </div>
-                              <div className="text-gray-500">
+                              <div className="text-gray-200">
                                 ({item.exchange})
                               </div>
                             </div>
-                            <div className="text-sm text-gray-400 flex flex-col items-center">
+                            <div className="text-sm text-gray-300 flex flex-col items-center">
                               <FaChevronUp className="mb-1" />
                               Expiry:{" "}
                               {extractDateFromIdentifier(

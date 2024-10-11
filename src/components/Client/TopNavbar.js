@@ -102,8 +102,8 @@ const TopNavbar = ({ toggleSidebar }) => {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
         <div className="bg-black p-8 rounded shadow-lg text-center">
-          <h2 className="text-2xl font-bold mb-4">Contact Admin</h2>
-          <p className="text-lg">
+          <h2 className="text-2xl font-bold mb-4 text-white">Contact Admin</h2>
+          <p className="text-lg text-white">
             Your account is inactive. Please contact the admin for assistance.
           </p>
         </div>
@@ -136,9 +136,9 @@ const TopNavbar = ({ toggleSidebar }) => {
             <span>Loading...</span>
           </div>
         ) : error ? (
-          <span className="text-red-500">Failed to load budget</span>
+          <span className="text-red-500">00</span>
         ) : (
-          <span>₹{budget}</span>
+          <span>₹{budget.toFixed(2)}</span>
         )}
 
         {/* Notification Icon with Count */}

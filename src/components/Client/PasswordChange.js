@@ -91,18 +91,18 @@ const PasswordChange = () => {
   };
 
   return (
-    <div className="flex">
+    <div className="flex bg-gradient-to-b from-gray-700 to-gray-800">
       <div className="flex-1">
         <TopNavbar toggleSidebar={toggleView} />
         <Sidebar isOpen={isToggled} closeSidebar={toggleView} />
 
-        <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold text-blue-800 mb-4 text-center">
+        <div className="max-w-md mx-auto p-6 bg-gradient-to-b from-gray-700 to-gray-800 rounded-lg shadow-md">
+          <h2 className="text-2xl font-bold text-blue-800 mb-4  text-white text-center">
             Change Password
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="form-group">
-              <label htmlFor="oldPassword" className="block text-gray-700">
+              <label htmlFor="oldPassword" className="block text-gray-100">
                 Old Password
               </label>
               <input
@@ -111,12 +111,12 @@ const PasswordChange = () => {
                 value={oldPassword}
                 onChange={(e) => setOldPassword(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black-500"
               />
             </div>
 
             <div className="form-group relative">
-              <label htmlFor="newPassword" className="block text-gray-700">
+              <label htmlFor="newPassword" className="block text-gray-100">
                 New Password
               </label>
               <input
@@ -137,7 +137,7 @@ const PasswordChange = () => {
             </div>
 
             <div className="form-group relative">
-              <label htmlFor="confirmPassword" className="block text-gray-700">
+              <label htmlFor="confirmPassword" className="block text-gray-100">
                 Confirm New Password
               </label>
               <input

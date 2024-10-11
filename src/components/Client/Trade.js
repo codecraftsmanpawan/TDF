@@ -36,7 +36,6 @@ const TradeScreen = () => {
         setStockData(response.data);
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching stock data:", error);
         setError("Error fetching stock data");
         setLoading(false);
       }
@@ -101,22 +100,22 @@ const TradeScreen = () => {
   return (
     <>
       {/* Fixed Top Navbar */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-gray-700 to-gray-800 shadow-md">
         <TopNavbar toggleSidebar={toggleView} />
         <Sidebar isOpen={isToggled} closeSidebar={toggleView} />
       </div>
 
       {/* Page Content */}
-      <div className="pt-16 bg-gray-100 min-h-screen">
+      <div className="pt-16 bg-gradient-to-b from-gray-700 to-gray-800 min-h-screen">
         <div className="p-4">
           {/* Stock Information Section */}
-          <div className="flex flex-col items-center mb-6 text-center shadow-lg p-6 bg-white rounded-lg">
-            <p className="text-2xl font-semibold mb-4 text-blue-900">{name}</p>
+          <div className="flex flex-col items-center mb-6 text-center shadow-lg p-6 bg-gradient-to-b from-gray-700 to-gray-800 rounded-lg">
+            <p className="text-2xl font-semibold mb-4 text-gray-100">{name}</p>
             <div className="flex items-center">
-              <p className="text-lg font-medium text-gray-600 mr-4">
+              <p className="text-lg font-medium text-gray-100 mr-4">
                 Exchange: {Exchange}
               </p>
-              <p className="text-lg font-medium text-gray-600">
+              <p className="text-lg font-medium text-gray-100">
                 Lot Size: {QuotationLot}
               </p>
             </div>
@@ -275,7 +274,7 @@ const BuySellPage = ({
       );
       toast.success("Trade successful!");
     } catch (error) {
-      toast.error("Error making trade");
+      toast.error("Cannot sell more than the maximum allowed");
     }
   };
 

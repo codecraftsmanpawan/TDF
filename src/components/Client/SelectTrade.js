@@ -125,13 +125,10 @@ const StockSelector = () => {
 
   return (
     <>
-      <div className="fixed top-0 left-0 right-0 z-50 bg-black shadow-md">
+      <div className="fixed top-0 left-0 right-0 z-50  shadow-md">
         <TopNavbar toggleSidebar={toggleView} />
         <Sidebar isOpen={isToggled} closeSidebar={toggleView} />
-        <div
-          className="p-6 max-w-2xl mx-auto bg-black min-h-screen overflow-y-auto"
-          style={{ maxHeight: "calc(100vh - 64px)" }}
-        >
+        <div className="p-6 max-w-2xl mx-auto bg-gradient-to-b from-gray-700 to-gray-800 min-h-screen overflow-y-auto">
           {" "}
           {/* Adjust the height based on your navbar height */}
           {/* Header */}
@@ -140,7 +137,7 @@ const StockSelector = () => {
               Select Stock
             </h1>
             <button
-              className="text-gray-500 hover:text-blue-700 transition"
+              className="text-gray-100 hover:text-blue-700 transition"
               onClick={() => navigate(-1)}
             >
               &larr; Back

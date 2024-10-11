@@ -175,12 +175,12 @@ function TradeChart() {
       <Sidebar isOpen={isToggled} closeSidebar={toggleView} />
 
       {/* Main Content */}
-      <div className="flex-1 p-6 bg-gray-100 overflow-auto">
+      <div className="flex-1 p-6 text-white bg-gradient-to-b from-gray-700 to-gray-800 overflow-auto">
         <div className="w-full h-full">
           {data.labels.length > 0 ? (
             <Line data={data} options={options} className="w-full h-full" />
           ) : (
-            <p className="text-gray-500">No data available</p>
+            <p className="text-gray-100">No data available</p>
           )}
         </div>
       </div>

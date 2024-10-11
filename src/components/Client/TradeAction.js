@@ -21,60 +21,83 @@ const InstrumentDetails = () => {
   const [blockedStocks, setBlockedStocks] = useState([]);
   const navigate = useNavigate();
   const [isToggled, setIsToggled] = useState(false);
+  const [maxAllowedAmount, setMaxAllowedAmount] = useState(Infinity);
+  const [netbanQuantity, setnetbanQuantity] = useState(30);
 
-  const toggleView = () => {
-    setIsToggled(!isToggled);
-  };
+  const toggleView = () => setIsToggled(!isToggled);
 
-  const getToken = () => {
-    return localStorage.getItem("StocksUsertoken");
-  };
+  const getToken = () => localStorage.getItem("StocksUsertoken");
 
   const getUserIdFromToken = () => {
     const token = getToken();
-    if (token) {
-      const decoded = jwtDecode(token);
-      return decoded.id;
+    return token ? jwtDecode(token).id : null;
+  };
+
+  useEffect(() => {
+    fetchBlockedStocks(instrumentIdentifier);
+  }, [instrumentIdentifier]);
+
+  const fetchBlockedStocks = async (instrumentIdentifier) => {
+    const blockedStocksConfig = {
+      method: "get",
+      maxBodyLength: Infinity,
+      url: "http://13.51.178.27:5000/api/var/Wishlist/blockstocks",
+      headers: {},
+    };
+
+    try {
+      const response = await axios.request(blockedStocksConfig);
+      setBlockedStocks(response.data);
+
+      if (!instrumentIdentifier) {
+        return;
+      }
+
+      const symbol = instrumentIdentifier.split("_")[1];
+
+      // Check if the current stock is in blocked stocks
+      const currentStockBlocked = response.data.find(
+        (stock) => stock.symbol === symbol
+      );
+
+      if (currentStockBlocked) {
+        console.log(`Current stock '${symbol}' blocked status: Blocked`);
+        setMaxAllowedAmount(netbanQuantity);
+      } else {
+        console.log(`Current stock '${symbol}' blocked status: Not blocked`);
+        setMaxAllowedAmount(Infinity);
+      }
+    } catch (error) {
+      setError("Failed to fetch blocked stocks.");
+      console.error("Error fetching blocked stocks:", error);
     }
-    return null;
   };
 
   useEffect(() => {
     const fetchData = async () => {
       const token = getToken();
-      if (!token) {
-        setError("Authentication token not found.");
-        return;
-      }
+      if (!token) return setError("Authentication token not found.");
 
       const userId = getUserIdFromToken();
-      if (!userId) {
-        setError("User ID not found in token.");
-        return;
-      }
-
-      const config = {
-        method: "get",
-        maxBodyLength: Infinity,
-        url: `http://13.51.178.27:5000/api/var/client/instrument/${instrumentIdentifier}/trades/?userId=${userId}`,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
+      if (!userId) return setError("User ID not found in token.");
 
       try {
-        const response = await axios.request(config);
+        const response = await axios.get(
+          `http://13.51.178.27:5000/api/var/client/instrument/${instrumentIdentifier}/trades/?userId=${userId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         setInstrumentData(response.data);
 
         if (response.data.trades.length > 0) {
-          const firstTradeAction = response.data.trades[0].action;
-          setIsBuy(firstTradeAction === "buy");
+          setIsBuy(response.data.trades[0].action === "buy");
         }
 
-        const initialQuantity = response.data.trades.reduce((acc, trade) => {
-          return trade.action === "buy" ? acc + trade.quantity : acc;
-        }, 0);
-
+        const initialQuantity = response.data.trades.reduce(
+          (acc, trade) => acc + (trade.action === "buy" ? trade.quantity : 0),
+          0
+        );
         setAvailableQuantity(initialQuantity);
       } catch (err) {
         setError("Failed to fetch instrument data.");
@@ -83,42 +106,18 @@ const InstrumentDetails = () => {
 
     const fetchStockDetails = async () => {
       const token = getToken();
-      if (!token) {
-        setError("Authentication token not found.");
-        return;
-      }
-
-      const stockConfig = {
-        method: "get",
-        maxBodyLength: Infinity,
-        url: `http://13.51.178.27:5000/api/var/client/stocks/${instrumentIdentifier}`,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
+      if (!token) return setError("Authentication token not found.");
 
       try {
-        const stockResponse = await axios.request(stockConfig);
+        const stockResponse = await axios.get(
+          `http://13.51.178.27:5000/api/var/client/stocks/${instrumentIdentifier}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         setStockDetails(stockResponse.data);
       } catch (error) {
         setError("Failed to fetch stock details.");
-      }
-    };
-
-    const fetchBlockedStocks = async () => {
-      const blockedStocksConfig = {
-        method: "get",
-        maxBodyLength: Infinity,
-        url: "http://13.51.178.27:5000/api/var/Wishlist/blockstocks",
-        headers: {},
-      };
-
-      try {
-        const response = await axios.request(blockedStocksConfig);
-        setBlockedStocks(response.data);
-        console.log(response.data);
-      } catch (error) {
-        setError("Failed to fetch blocked stocks.");
       }
     };
 
@@ -129,24 +128,15 @@ const InstrumentDetails = () => {
 
   const handleTabChange = (action) => {
     setIsBuy(action === "buy");
-    setAvailableQuantity(
-      action === "buy"
-        ? stockDetails?.QuotationLot || 0
-        : stockDetails?.QuotationLot || 0
-    );
+    setAvailableQuantity(stockDetails?.QuotationLot || 0);
   };
 
   const handlePercentageChange = (percentage, action) => {
-    if (!stockDetails?.QuotationLot) {
-      setError("Lot size not found.");
-      return;
-    }
+    const lotSize = stockDetails?.QuotationLot;
+    if (!lotSize) return setError("Lot size not found.");
 
-    const lotSize = stockDetails.QuotationLot;
     const adjustmentAmount = lotSize * percentage;
-
-    const currentAmount = isNaN(parseFloat(amount)) ? 0 : parseFloat(amount);
-
+    const currentAmount = parseFloat(amount) || 0;
     let newAmount =
       action === "add"
         ? currentAmount + adjustmentAmount
@@ -155,6 +145,11 @@ const InstrumentDetails = () => {
     if (newAmount < 0) {
       setError("Cannot have a negative quantity.");
       newAmount = 0;
+    } else if (newAmount > maxAllowedAmount) {
+      setError(
+        `Cannot exceed the maximum allowed amount of ${maxAllowedAmount}.`
+      );
+      newAmount = maxAllowedAmount;
     }
 
     setAmount(newAmount.toFixed(0));
@@ -162,74 +157,54 @@ const InstrumentDetails = () => {
 
   const handleTrade = async () => {
     const token = getToken();
-    if (!token) {
-      setError("Authentication token not found.");
-      return;
-    }
+    if (!token) return setError("Authentication token not found.");
 
     const userId = getUserIdFromToken();
-    if (!userId) {
-      setError("User ID not found in token.");
-      return;
-    }
+    if (!userId) return setError("User ID not found in token.");
 
-    // Check blocked stocks
     const blockedStock = blockedStocks.find(
       (stock) => stock.symbol === stockDetails?.name
     );
-    if (blockedStock) {
-      const blockQuantity = blockedStock.quantity;
-      const tradeQuantity = parseFloat(amount);
-
-      if (tradeQuantity > blockQuantity) {
-        setError(
-          `Trade limit exceeded. Max quantity available is ${blockQuantity}`
-        );
-        return;
-      }
+    if (blockedStock && parseFloat(amount) > blockedStock.quantity) {
+      return setError(
+        `Trade limit exceeded. Max quantity available is ${blockedStock.quantity}`
+      );
     }
 
-    // Get current time in India/Kolkata timezone
-    const indiaTime = new Date().toLocaleString("en-US", {
-      timeZone: "Asia/Kolkata",
-    });
-    const currentTime = new Date(indiaTime);
+    const currentTime = new Date(
+      new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+    );
 
-    let startHour, startMinute, endHour, endMinute;
+    const exchangeTimes = {
+      NSE: { start: [9, 15], end: [15, 30] },
+      MCX: { start: [9, 0], end: [23, 30] },
+    };
+
     const exchange = stockDetails?.Exchange.toUpperCase();
-    if (exchange === "NSE") {
-      startHour = 9;
-      startMinute = 15;
-      endHour = 15;
-      endMinute = 30;
-    } else if (exchange === "MCX") {
-      startHour = 9;
-      startMinute = 0;
-      endHour = 23;
-      endMinute = 30;
-    } else {
-      setError("Unsupported exchange");
-      return;
-    }
+    if (!exchangeTimes[exchange]) return setError("Unsupported exchange");
 
-    const startTime = new Date(currentTime);
-    startTime.setHours(startHour, startMinute, 0, 0);
+    const [startHour, startMinute] = exchangeTimes[exchange].start;
+    const [endHour, endMinute] = exchangeTimes[exchange].end;
 
-    const endTime = new Date(currentTime);
-    endTime.setHours(endHour, endMinute, 0, 0);
+    const startTime = new Date(currentTime).setHours(
+      startHour,
+      startMinute,
+      0,
+      0
+    );
+    const endTime = new Date(currentTime).setHours(endHour, endMinute, 0, 0);
 
     if (currentTime < startTime || currentTime > endTime) {
-      toast.error(
+      return toast.error(
         `Trading on ${exchange} is only allowed between ${startHour}:${
           startMinute < 10 ? "0" + startMinute : startMinute
         } AM and ${endHour}:${endMinute < 10 ? "0" + endMinute : endMinute} PM.`
       );
-      return;
     }
 
     const data = {
       _id: userId,
-      instrumentIdentifier: instrumentIdentifier,
+      instrumentIdentifier,
       name: stockDetails?.name,
       exchange: stockDetails?.Exchange,
       trade_type: isBuy ? "buy" : "sell",
@@ -237,19 +212,13 @@ const InstrumentDetails = () => {
       price: isBuy ? stockDetails?.BuyPrice : stockDetails?.SellPrice,
     };
 
-    const config = {
-      method: "post",
-      maxBodyLength: Infinity,
-      url: "http://13.51.178.27:5000/api/var/client/trades",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      data: data,
-    };
-
     try {
-      await axios.request(config);
+      await axios.post("http://13.51.178.27:5000/api/var/client/trades", data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
       toast.success("Trade successful!");
       navigate("/portfolio");
     } catch (err) {
@@ -258,9 +227,7 @@ const InstrumentDetails = () => {
     }
   };
 
-  if (!instrumentData || !stockDetails) {
-    return <Spinner />;
-  }
+  if (!instrumentData || !stockDetails) return <Spinner />;
 
   const { netBuyQuantity, netSellQuantity } = instrumentData;
   const { Exchange, QuotationLot, SellPrice, BuyPrice, name } = stockDetails;
@@ -352,10 +319,20 @@ const InstrumentDetails = () => {
 
             <div className="flex items-center mb-4">
               <input
-                type="text"
+                type="number"
                 className="border rounded-lg py-2 px-4 w-full text-lg font-semibold text-blue-900 mx-2 text-center"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={(e) => {
+                  const newAmount = parseFloat(e.target.value) || 0;
+
+                  if (newAmount > maxAllowedAmount) {
+                    alert(`The maximum allowed amount is ${maxAllowedAmount}`);
+                    setAmount(maxAllowedAmount.toString());
+                  } else {
+                    setAmount(newAmount.toString());
+                  }
+                }}
+                max={maxAllowedAmount}
                 readOnly
               />
             </div>

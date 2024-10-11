@@ -393,27 +393,33 @@ const SuperAdminDashboard = () => {
             </div>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse border border-gray-400">
+            <table
+              className="min-w-full w-full border-collapse border border-gray-400"
+              role="table"
+              aria-label="Master Admins Table"
+            >
               <thead>
                 <tr className="bg-gray-200">
                   <th className="px-4 py-2 border border-gray-400">Sr No.</th>
                   <th className="px-4 py-2 border border-gray-400">Code</th>
                   <th className="px-4 py-2 border border-gray-400">Budget</th>
                   <th className="px-4 py-2 border border-gray-400">Clients</th>
-
                   <th className="px-4 py-2 border border-gray-400">
                     Current P/L
                   </th>
                   <th className="px-4 py-2 border border-gray-400">
-                    Clients Brokerage
+                    Master Patti
                   </th>
                   <th className="px-4 py-2 border border-gray-400">
-                    Patti Brokerage
+                    Super Patti
+                  </th>
+                  {/* Removed duplicate 'Master Patti' column */}
+                  <th className="px-4 py-2 border border-gray-400">
+                    Clients Brokerage
                   </th>
                   <th className="px-4 py-2 border border-gray-400">
                     Master Brokerage
                   </th>
-
                   <th className="px-4 py-2 border border-gray-400">
                     My Brokerage
                   </th>
@@ -436,10 +442,8 @@ const SuperAdminDashboard = () => {
                     <td className="px-4 py-2 border border-gray-400 text-center">
                       ₹{masterAdmin.budget}.00
                     </td>
-
                     <td className="px-4 py-2 border border-gray-400 text-center">
                       {masterAdmin.totalClients}
-                      {masterAdmin.pattiPercentage}
                     </td>
                     <td
                       className={`px-4 py-2 border border-gray-400 text-center ${
@@ -459,28 +463,41 @@ const SuperAdminDashboard = () => {
                           : ""}
                       </span>
                     </td>
+                    <td className="px-4 py-2 border border-gray-400 text-center">
+                      ₹
+                      {masterAdmin.totalCurrentBrokerage &&
+                      masterAdmin.pattiPercentage
+                        ? (
+                            (masterAdmin.totalCurrentProfitLoss *
+                              masterAdmin.pattiPercentage) /
+                            100
+                          ).toFixed(2)
+                        : "0.00"}{" "}
+                      - {masterAdmin.pattiPercentage}%
+                    </td>
+                    <td className="px-4 py-2 border border-gray-400 text-center">
+                      ₹
+                      {masterAdmin.totalCurrentProfitLoss &&
+                      masterAdmin.pattiPercentage
+                        ? (
+                            masterAdmin.totalCurrentProfitLoss -
+                            (masterAdmin.totalCurrentProfitLoss *
+                              masterAdmin.pattiPercentage) /
+                              100
+                          ).toFixed(2)
+                        : "0.00"}{" "}
+                      - {100 - masterAdmin.pattiPercentage}%
+                    </td>
 
                     <td className="px-4 py-2 border border-gray-400 text-center">
                       ₹{masterAdmin.totalCurrentBrokerage.toFixed(2)}
                     </td>
                     <td className="px-4 py-2 border border-gray-400 text-center">
                       ₹
-                      {masterAdmin.totalCurrentBrokerage &&
-                      masterAdmin.pattiPercentage
-                        ? (masterAdmin.totalCurrentBrokerage *
-                            masterAdmin.pattiPercentage) /
-                          100
-                        : 0}{" "}
-                      - {masterAdmin.pattiPercentage}%
-                    </td>
-
-                    <td className="px-4 py-2 border border-gray-400 text-center">
-                      ₹
                       {masterAdmin.totalFinalMasterBrokerage
                         ? masterAdmin.totalFinalMasterBrokerage.toFixed(2)
                         : "0.00"}
                     </td>
-
                     <td className="px-4 py-2 border border-gray-400 text-center">
                       ₹
                       {(
@@ -488,7 +505,6 @@ const SuperAdminDashboard = () => {
                         (masterAdmin.totalFinalMasterBrokerage || 0)
                       ).toFixed(2)}
                     </td>
-
                     <td className="px-4 py-2 border border-gray-400 text-center">
                       <button
                         className={`py-1 px-2 rounded-full ${

@@ -117,7 +117,7 @@ const MasterAdminDashboard = () => {
           setClientsData(data.clients);
           setFilteredClients(data.clients);
         } else {
-          toast.error(data.message || "Failed to fetch clients data");
+          // toast.error(data.message || "Failed to fetch clients data");
         }
       } catch (error) {
         console.error("Fetch error:", error);
@@ -258,8 +258,8 @@ const MasterAdminDashboard = () => {
   }
   const percentage =
     totalBrokerage && masterAdmin.pattiPercentage
-      ? (totalBrokerage * masterAdmin.pattiPercentage) / 100
-      : 0;
+      ? ((totalProfitLoss * masterAdmin.pattiPercentage) / 100).toFixed(2)
+      : "0.0";
 
   return (
     <>
@@ -317,7 +317,7 @@ const MasterAdminDashboard = () => {
               </div>
               <div className="mt-1">Total Active Client ID</div>
             </div> */}
-            <div className="p-4 bg-red-200 rounded-lg flex flex-col items-center justify-center min-w-60 min-h-50">
+            {/* <div className="p-4 bg-red-200 rounded-lg flex flex-col items-center justify-center min-w-60 min-h-50">
               <UserIcon className="w-7 h-7 text-red-600 mb-2" />
               <div className="text-3xl font-bold text-red-600">
                 {
@@ -326,7 +326,7 @@ const MasterAdminDashboard = () => {
                 }
               </div>
               <div className="mt-1">Total Blocked Client ID</div>
-            </div>
+            </div> */}
             <div className="p-4 bg-red-200 rounded-lg flex flex-col items-center justify-center min-w-80 min-h-50">
               <CurrencyRupeeIcon className="w-7 h-7 text-red-600 mb-2" />
               <div className="text-3xl font-bold text-red-600">
@@ -349,6 +349,24 @@ const MasterAdminDashboard = () => {
 
               <div className="mt-1">Total Profit/Loss</div>
             </div>
+            <div className="p-4 bg-green-200 rounded-lg flex flex-col items-center justify-center min-w-60 min-h-50">
+              <CurrencyRupeeIcon className="w-7 h-7 text-green-600 mb-2" />
+              <div className="text-3xl font-bold text-green-600">
+                {percentage}
+              </div>
+              <div className="mt-1">
+                {masterAdmin?.pattiPercentage}% Patti Master Admin
+              </div>
+            </div>
+            <div className="p-4 bg-green-200 rounded-lg flex flex-col items-center justify-center min-w-60 min-h-50">
+              <CurrencyRupeeIcon className="w-7 h-7 text-green-600 mb-2" />
+              <div className="text-3xl font-bold text-green-600">
+                {(totalProfitLoss - percentage).toFixed(2)}
+              </div>
+              <div className="mt-1">
+                {100 - (masterAdmin?.pattiPercentage || 0)}% Patti Super Admin
+              </div>
+            </div>
 
             <div className="p-4 bg-green-200 rounded-lg flex flex-col items-center justify-center min-w-60 min-h-50">
               <CurrencyRupeeIcon className="w-7 h-7 text-green-600 mb-2" />
@@ -356,15 +374,6 @@ const MasterAdminDashboard = () => {
                 {totalBrokerage}
               </div>
               <div className="mt-1">Total Brokerage</div>
-            </div>
-            <div className="p-4 bg-green-200 rounded-lg flex flex-col items-center justify-center min-w-60 min-h-50">
-              <CurrencyRupeeIcon className="w-7 h-7 text-green-600 mb-2" />
-              <div className="text-3xl font-bold text-green-600">
-                {percentage}
-              </div>
-              <div className="mt-1">
-                {masterAdmin?.pattiPercentage}% Patti Brokerage
-              </div>
             </div>
             <div className="p-4 bg-green-200 rounded-lg flex flex-col items-center justify-center min-w-60 min-h-50">
               <CurrencyRupeeIcon className="w-7 h-7 text-green-600 mb-2" />
