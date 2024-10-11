@@ -1,0 +1,42 @@
+/* Reset default browser styles */
+@tailwind base;
+
+/* Define component-specific styles */
+@tailwind components;
+
+/* Leverage utility classes for rapid styling */
+@tailwind utilities;
+
+/* Add custom styles for a refined user experience */
+/* Add custom styles for a refined user experience */
+.blink-green {
+    animation: blink-green 1s infinite;
+}
+
+.blink-red {
+    animation: blink-red 1s infinite;
+}
+
+@keyframes blink-green {
+
+    0%,
+    100% {
+        background-color: transparent;
+    }
+
+    50% {
+        background-color: rgba(76, 175, 80, 0.5);
+    }
+}
+
+@keyframes blink-red {
+
+    0%,
+    100% {
+        background-color: transparent;
+    }
+
+    50% {
+        background-color: rgba(244, 67, 54, 0.5);
+    }
+}
