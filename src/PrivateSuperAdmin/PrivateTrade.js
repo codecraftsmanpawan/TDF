@@ -2,34 +2,26 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
-import TopNavbar from "./TopNavbar";
-import BottomNav from "./BottomNav";
-import Sidebar from "./SideBar";
-import Spinner from "./Spinner";
+import TopNavbar from "./TopNavBar";
 import { FaMinus, FaPlus } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
 const TradeScreen = () => {
-  const { instrumentId } = useParams();
-  const [isToggled, setIsToggled] = useState(false);
+  const { instrumentId, clientId } = useParams();
   const [stockData, setStockData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [clientId, setClientId] = useState("");
+  const [price, setPrice] = useState(0); // Price the user enters
 
-  const toggleView = () => {
-    setIsToggled(!isToggled);
-  };
   useEffect(() => {
     const fetchStockData = async () => {
       try {
         const response = await axios.get(
-          `http://13.51.178.27:5000/api/var/client/stocks/${instrumentId}`,
+          `http://13.51.178.27:5000/api/var/privateAdmin/stocks/${instrumentId}`,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem(
-                "StocksUsertoken"
-              )}`,
+              Authorization: `Bearer ${localStorage.getItem("****xxx*****")}`,
             },
           }
         );
@@ -54,35 +46,16 @@ const TradeScreen = () => {
 
   useEffect(() => {
     // Decode the token and extract client_id
-    const token = localStorage.getItem("StocksUsertoken");
+    const token = localStorage.getItem("****xxx*****");
     if (token) {
       try {
         const decodedToken = jwtDecode(token);
-        setClientId(decodedToken.id);
       } catch (e) {
         console.error("Error decoding token:", e);
         setError("Error decoding token");
       }
     }
   }, []);
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen bg-gray-100">
-        <Spinner />
-      </div>
-    );
-  }
-
-  // if (error) {
-  //     return (
-  //         <div className="flex justify-center items-center h-screen bg-gray-100">
-  //             <div className="text-red-500 text-center">
-  //                 <p>{error}</p>
-  //             </div>
-  //         </div>
-  //     );
-  // }
 
   const {
     Exchange = "N/A",
@@ -101,8 +74,7 @@ const TradeScreen = () => {
     <>
       {/* Fixed Top Navbar */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-gray-700 to-gray-800 shadow-md">
-        <TopNavbar toggleSidebar={toggleView} />
-        <Sidebar isOpen={isToggled} closeSidebar={toggleView} />
+        <TopNavbar />
       </div>
 
       {/* Page Content */}
@@ -130,14 +102,11 @@ const TradeScreen = () => {
             instrumentIdentifier={InstrumentIdentifier}
             name={name}
             clientId={clientId}
+            setPrice={setPrice} // Pass the setter function for price
           />
         </div>
       </div>
 
-      {/* Fixed Bottom Navbar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white shadow-md">
-        <BottomNav />
-      </div>
       {/* Toast Container */}
       <ToastContainer />
     </>
@@ -152,10 +121,16 @@ const BuySellPage = ({
   instrumentIdentifier,
   name,
   clientId,
+  setPrice, // Setter for price
 }) => {
   const [isBuy, setIsBuy] = useState(true);
   const [amount, setAmount] = useState(0);
   const [error, setError] = useState("");
+  const [localPrice, setLocalPrice] = useState(buyPrice); // Local price for input
+
+  useEffect(() => {
+    setLocalPrice(isBuy ? buyPrice : sellPrice); // Update price based on trade type
+  }, [isBuy, buyPrice, sellPrice]);
 
   const handleTabChange = (tab) => {
     setIsBuy(tab === "buy");
@@ -181,13 +156,9 @@ const BuySellPage = ({
       Math.max(0, (parseFloat(prevAmount) + change).toFixed(2))
     );
   };
-
   const handleTrade = async () => {
     const tradeType = isBuy ? "buy" : "sell";
-
-    // Calculate trade percentage based on the quantity and quotation lot
     const calculatedTradePercentage = (parseFloat(amount) / lotSize) * 100;
-
     const data = {
       _id: clientId,
       instrumentIdentifier: instrumentIdentifier,
@@ -195,29 +166,29 @@ const BuySellPage = ({
       exchange: exchange,
       trade_type: tradeType,
       quantity: parseFloat(amount),
-      // If tradeType is "sell", make the percentage negative
-      tradePercentage:
-        tradeType === "sell"
-          ? -calculatedTradePercentage
-          : calculatedTradePercentage,
-      price: isBuy ? buyPrice : sellPrice,
+      price: parseFloat(localPrice),
+      tradePercentage: isBuy
+        ? calculatedTradePercentage
+        : -calculatedTradePercentage,
     };
 
     try {
       const response = await axios.post(
-        "http://13.51.178.27:5000/api/var/client/trades",
+        "http://13.51.178.27:5000/api/var/privateAdmin/trades",
         data,
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("StocksUsertoken")}`,
+            Authorization: `Bearer ${localStorage.getItem("****xxx*****")}`,
           },
         }
       );
 
-      // Log the response to the console
-      console.log("Trade Response:", response.data);
-      toast.success("Trade successful!");
+      toast.success(
+        `Trade added successfully! Trade Percentage: ${data.tradePercentage.toFixed(
+          2
+        )}%`
+      );
     } catch (error) {
       // Check if the error response has data and message
       const errorMessage =
@@ -229,11 +200,11 @@ const BuySellPage = ({
       const adjustedRemainingBuy = (remainingBuy / 100) * lotSize;
       const adjustedRemainingSell = (remainingSell / 100) * lotSize;
 
-      // Construct the complete error message with line breaks
+      // Construct the complete error message
       const completeErrorMessage = `
-
-  Remaining Buy: ${adjustedRemainingBuy}\n
-  Remaining Sell: ${adjustedRemainingSell}
+Remaining Buy: ${adjustedRemainingBuy}\n
+Remaining Sell: ${adjustedRemainingSell}\n
+${errorMessage}
 `;
 
       toast.error(completeErrorMessage);
@@ -242,46 +213,6 @@ const BuySellPage = ({
 
   // const handleTrade = async () => {
   //   const tradeType = isBuy ? "buy" : "sell";
-
-  //   // Get current time in India/Kolkata timezone
-  //   const indiaTime = new Date().toLocaleString("en-US", {
-  //     timeZone: "Asia/Kolkata",
-  //   });
-  //   const currentTime = new Date(indiaTime);
-
-  //   let startHour, startMinute, endHour, endMinute;
-
-  //   // Set trading hours based on the exchange
-  //   if (exchange.toUpperCase() === "NSE") {
-  //     // NSE trading hours (9:15 AM to 3:30 PM)
-  //     startHour = 9;
-  //     startMinute = 15;
-  //     endHour = 15;
-  //     endMinute = 30;
-  //   } else if (exchange.toUpperCase() === "MCX") {
-  //     // MCX trading hours (9:00 AM to 11:30 PM)
-  //     startHour = 9;
-  //     startMinute = 0;
-  //     endHour = 23;
-  //     endMinute = 30;
-  //   }
-
-  //   const startTime = new Date(currentTime);
-  //   startTime.setHours(startHour, startMinute, 0, 0);
-
-  //   const endTime = new Date(currentTime);
-  //   endTime.setHours(endHour, endMinute, 0, 0);
-
-  //   // Check if the current time is outside of trading hours
-  //   if (currentTime < startTime || currentTime > endTime) {
-  //     toast.error(
-  //       `Trading on ${exchange.toUpperCase()} is only allowed between ${startHour}:${
-  //         startMinute < 10 ? "0" + startMinute : startMinute
-  //       } AM and ${endHour}:${endMinute < 10 ? "0" + endMinute : endMinute} PM.`
-  //     );
-  //     return;
-  //   }
-
   //   const data = {
   //     _id: clientId,
   //     instrumentIdentifier: instrumentIdentifier,
@@ -289,23 +220,24 @@ const BuySellPage = ({
   //     exchange: exchange,
   //     trade_type: tradeType,
   //     quantity: parseFloat(amount),
-  //     price: isBuy ? buyPrice : sellPrice,
+  //     price: parseFloat(localPrice), // Use the dynamic price input
   //   };
 
   //   try {
   //     const response = await axios.post(
-  //       "http://13.51.178.27:5000/api/var/client/trades",
+  //       "http://13.51.178.27:5000/api/var/privateAdmin/trades",
   //       data,
   //       {
   //         headers: {
   //           "Content-Type": "application/json",
-  //           Authorization: `Bearer ${localStorage.getItem("StocksUsertoken")}`,
+  //           Authorization: `Bearer ${localStorage.getItem("****xxx*****")}`,
   //         },
   //       }
   //     );
-  //     toast.success("Trade successful!");
+  //     toast.success("Trade added successfully!");
   //   } catch (error) {
-  //     toast.error("Cannot sell more than the maximum allowed");
+  //     toast.error("Error making trade");
+  //     console.error("Error making trade:", error);
   //   }
   // };
 
@@ -365,7 +297,7 @@ const BuySellPage = ({
               className="border rounded-lg py-2 px-4 w-full text-lg font-semibold text-blue-900 mx-2 text-center"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              readOnly
+              Onlyread
             />
           </div>
 
@@ -416,7 +348,21 @@ const BuySellPage = ({
               <FaPlus className="text-white" />
             </button>
           </div>
-
+          {/* New Input for Price */}
+          <div className="flex justify-between mb-4">
+            <span className="text-gray-600">Price</span>
+          </div>
+          <div className="flex items-center mb-4">
+            <input
+              type="number"
+              className="border rounded-lg py-2 px-4 w-full text-lg font-semibold text-blue-900 mx-2 text-center"
+              value={localPrice}
+              onChange={(e) => {
+                setLocalPrice(e.target.value);
+              }}
+              placeholder={`Enter ${isBuy ? "buy" : "sell"} price`}
+            />
+          </div>
           <button
             className={`w-full py-3 mt-6 rounded-lg ${
               isBuy ? "bg-green-500 text-white" : "bg-red-500 text-white"

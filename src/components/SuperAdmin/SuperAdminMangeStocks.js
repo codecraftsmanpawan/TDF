@@ -188,7 +188,7 @@ const StockTable = () => {
                 <th className="py-3 px-6 text-left">Expiry</th>
                 <th className="py-3 px-6 text-left">Status</th>
                 <th className="py-3 px-6 text-left">Action</th>
-                <th className="py-3 px-6 text-left">Quantity Limit</th>
+                <th className="py-3 px-6 text-left">Update Closing</th>
               </tr>
             </thead>
             <tbody>
@@ -260,7 +260,9 @@ const StockTable = () => {
                       <Link
                         to={`/Quantity/Limit/${encodeURIComponent(
                           stock.InstrumentIdentifier
-                        )}/${encodeURIComponent(stock.name)}`}
+                        )}/${encodeURIComponent(
+                          stock.name
+                        )}/${encodeURIComponent(stock.Close)}`}
                         className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
                       >
                         Set

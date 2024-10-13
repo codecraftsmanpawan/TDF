@@ -154,7 +154,6 @@ const InstrumentDetails = () => {
 
     setAmount(newAmount.toFixed(0));
   };
-
   const handleTrade = async () => {
     const token = getToken();
     if (!token) return setError("Authentication token not found.");
@@ -171,36 +170,8 @@ const InstrumentDetails = () => {
       );
     }
 
-    const currentTime = new Date(
-      new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
-    );
-
-    const exchangeTimes = {
-      NSE: { start: [9, 15], end: [15, 30] },
-      MCX: { start: [9, 0], end: [23, 30] },
-    };
-
-    const exchange = stockDetails?.Exchange.toUpperCase();
-    if (!exchangeTimes[exchange]) return setError("Unsupported exchange");
-
-    const [startHour, startMinute] = exchangeTimes[exchange].start;
-    const [endHour, endMinute] = exchangeTimes[exchange].end;
-
-    const startTime = new Date(currentTime).setHours(
-      startHour,
-      startMinute,
-      0,
-      0
-    );
-    const endTime = new Date(currentTime).setHours(endHour, endMinute, 0, 0);
-
-    if (currentTime < startTime || currentTime > endTime) {
-      return toast.error(
-        `Trading on ${exchange} is only allowed between ${startHour}:${
-          startMinute < 10 ? "0" + startMinute : startMinute
-        } AM and ${endHour}:${endMinute < 10 ? "0" + endMinute : endMinute} PM.`
-      );
-    }
+    const lotSize = stockDetails?.QuotationLot; // Ensure lotSize is defined
+    const calculatedTradePercentage = (parseFloat(amount) / lotSize) * 100;
 
     const data = {
       _id: userId,
@@ -209,6 +180,9 @@ const InstrumentDetails = () => {
       exchange: stockDetails?.Exchange,
       trade_type: isBuy ? "buy" : "sell",
       quantity: parseFloat(amount),
+      tradePercentage: isBuy
+        ? calculatedTradePercentage
+        : -calculatedTradePercentage,
       price: isBuy ? stockDetails?.BuyPrice : stockDetails?.SellPrice,
     };
 
@@ -219,13 +193,108 @@ const InstrumentDetails = () => {
           "Content-Type": "application/json",
         },
       });
-      toast.success("Trade successful!");
+
+      toast.success(
+        `Trade successful! Trade Percentage: ${data.tradePercentage.toFixed(
+          2
+        )}%`
+      );
       navigate("/portfolio");
-    } catch (err) {
-      console.error("Error making trade:", err);
-      setError("Failed to submit trade.");
+    } catch (error) {
+      console.error("Error making trade:", error);
+
+      // Check if the error response has data and message
+      const errorMessage =
+        error.response?.data?.message || "Error making trade";
+      const remainingBuy = error.response?.data?.remainingBuy || 0;
+      const remainingSell = error.response?.data?.remainingSell || 0;
+
+      // Calculate adjusted remaining values based on the lotSize
+      const adjustedRemainingBuy = (remainingBuy / 100) * lotSize;
+      const adjustedRemainingSell = (remainingSell / 100) * lotSize;
+
+      // Construct the complete error message
+      const completeErrorMessage = `
+Remaining Buy: ${adjustedRemainingBuy}\n
+Remaining Sell: ${adjustedRemainingSell}\n
+${errorMessage}
+`;
+
+      toast.error(completeErrorMessage);
     }
   };
+
+  // const handleTrade = async () => {
+  //   const token = getToken();
+  //   if (!token) return setError("Authentication token not found.");
+
+  //   const userId = getUserIdFromToken();
+  //   if (!userId) return setError("User ID not found in token.");
+
+  //   const blockedStock = blockedStocks.find(
+  //     (stock) => stock.symbol === stockDetails?.name
+  //   );
+  //   if (blockedStock && parseFloat(amount) > blockedStock.quantity) {
+  //     return setError(
+  //       `Trade limit exceeded. Max quantity available is ${blockedStock.quantity}`
+  //     );
+  //   }
+
+  //   const currentTime = new Date(
+  //     new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+  //   );
+
+  //   const exchangeTimes = {
+  //     NSE: { start: [9, 15], end: [15, 30] },
+  //     MCX: { start: [9, 0], end: [23, 30] },
+  //   };
+
+  //   const exchange = stockDetails?.Exchange.toUpperCase();
+  //   if (!exchangeTimes[exchange]) return setError("Unsupported exchange");
+
+  //   const [startHour, startMinute] = exchangeTimes[exchange].start;
+  //   const [endHour, endMinute] = exchangeTimes[exchange].end;
+
+  //   const startTime = new Date(currentTime).setHours(
+  //     startHour,
+  //     startMinute,
+  //     0,
+  //     0
+  //   );
+  //   const endTime = new Date(currentTime).setHours(endHour, endMinute, 0, 0);
+
+  //   if (currentTime < startTime || currentTime > endTime) {
+  //     return toast.error(
+  //       `Trading on ${exchange} is only allowed between ${startHour}:${
+  //         startMinute < 10 ? "0" + startMinute : startMinute
+  //       } AM and ${endHour}:${endMinute < 10 ? "0" + endMinute : endMinute} PM.`
+  //     );
+  //   }
+
+  //   const data = {
+  //     _id: userId,
+  //     instrumentIdentifier,
+  //     name: stockDetails?.name,
+  //     exchange: stockDetails?.Exchange,
+  //     trade_type: isBuy ? "buy" : "sell",
+  //     quantity: parseFloat(amount),
+  //     price: isBuy ? stockDetails?.BuyPrice : stockDetails?.SellPrice,
+  //   };
+
+  //   try {
+  //     await axios.post("http://13.51.178.27:5000/api/var/client/trades", data, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         "Content-Type": "application/json",
+  //       },
+  //     });
+  //     toast.success("Trade successful!");
+  //     navigate("/portfolio");
+  //   } catch (err) {
+  //     console.error("Error making trade:", err);
+  //     setError("Failed to submit trade.");
+  //   }
+  // };
 
   if (!instrumentData || !stockDetails) return <Spinner />;
 
