@@ -173,7 +173,60 @@ const BuySellPage = ({
     }
   };
 
-  // const handleBidSubmit = async () => {
+  const handleBidSubmit = async () => {
+    const action = determineButtonAction().toLowerCase();
+    const price =
+      action === "buy" ? buyPrice : action === "sell" ? sellPrice : 0;
+
+    if (action === "invalid") {
+      toast.error("Invalid price");
+      return;
+    }
+
+    if (quantity <= 0 || isNaN(quantity)) {
+      toast.error("Invalid quantity");
+      return;
+    }
+
+    // Calculate bidPercentage and make it negative for sell actions
+    let bidPercentage = (quantity / lotSize) * 100;
+    if (action === "sell") {
+      bidPercentage = -Math.abs(bidPercentage); // Ensuring it's negative
+    }
+
+    const token = localStorage.getItem("StocksUsertoken");
+    const decodedToken = jwtDecode(token);
+    const userId = decodedToken.id;
+
+    try {
+      const response = await axios.post(
+        "http://13.51.178.27:5000/api/var/client/add/bid",
+        {
+          userId: userId,
+          instrumentIdentifier: instrumentId,
+          bidPrice: inputPrice,
+          bidQuantity: quantity,
+          bidPercentage: bidPercentage.toFixed(2),
+          exchange: exchange,
+          tradeType: action,
+          tradeId: tradeId,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      toast.success("Bid submitted successfully");
+      // Clear form or handle success here
+    } catch (error) {
+      toast.error("Error submitting bid");
+    }
+  };
+
+  //     const handleBidSubmit = async () => {
   //     const action = determineButtonAction().toLowerCase();
   //     const price = action === 'buy' ? buyPrice : action === 'sell' ? sellPrice : 0;
 
@@ -184,6 +237,39 @@ const BuySellPage = ({
 
   //     if (quantity <= 0 || isNaN(quantity)) {
   //         toast.error('Invalid quantity');
+  //         return;
+  //     }
+
+  //     // Get current time in India/Kolkata timezone
+  //     const indiaTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+  //     const currentTime = new Date(indiaTime);
+
+  //     let startHour, startMinute, endHour, endMinute;
+
+  //     // Set trading hours based on the exchange
+  //     if (exchange.toUpperCase() === 'NSE') {
+  //         // NSE trading hours (9:15 AM to 3:30 PM)
+  //         startHour = 9;
+  //         startMinute = 15;
+  //         endHour = 15;
+  //         endMinute = 30;
+  //     } else if (exchange.toUpperCase() === 'MCX') {
+  //         // MCX trading hours (9:00 AM to 11:30 PM)
+  //         startHour = 9;
+  //         startMinute = 0;
+  //         endHour = 23;
+  //         endMinute = 30;
+  //     }
+
+  //     const startTime = new Date(currentTime);
+  //     startTime.setHours(startHour, startMinute, 0, 0);
+
+  //     const endTime = new Date(currentTime);
+  //     endTime.setHours(endHour, endMinute, 0, 0);
+
+  //     // Check if the current time is outside of trading hours
+  //     if (currentTime < startTime || currentTime > endTime) {
+  //         toast.error(`Bidding on ${exchange.toUpperCase()} is only allowed between ${startHour}:${startMinute < 10 ? '0' + startMinute : startMinute} AM and ${endHour}:${endMinute < 10 ? '0' + endMinute : endMinute} PM.`);
   //         return;
   //     }
 
@@ -212,90 +298,6 @@ const BuySellPage = ({
   //         toast.error('Error submitting bid');
   //     }
   // };
-
-  const handleBidSubmit = async () => {
-    const action = determineButtonAction().toLowerCase();
-    const price =
-      action === "buy" ? buyPrice : action === "sell" ? sellPrice : 0;
-
-    if (action === "invalid") {
-      toast.error("Invalid price");
-      return;
-    }
-
-    if (quantity <= 0 || isNaN(quantity)) {
-      toast.error("Invalid quantity");
-      return;
-    }
-
-    // Get current time in India/Kolkata timezone
-    const indiaTime = new Date().toLocaleString("en-US", {
-      timeZone: "Asia/Kolkata",
-    });
-    const currentTime = new Date(indiaTime);
-
-    let startHour, startMinute, endHour, endMinute;
-
-    // Set trading hours based on the exchange
-    if (exchange.toUpperCase() === "NSE") {
-      // NSE trading hours (9:15 AM to 3:30 PM)
-      startHour = 9;
-      startMinute = 15;
-      endHour = 15;
-      endMinute = 30;
-    } else if (exchange.toUpperCase() === "MCX") {
-      // MCX trading hours (9:00 AM to 11:30 PM)
-      startHour = 9;
-      startMinute = 0;
-      endHour = 23;
-      endMinute = 30;
-    }
-
-    const startTime = new Date(currentTime);
-    startTime.setHours(startHour, startMinute, 0, 0);
-
-    const endTime = new Date(currentTime);
-    endTime.setHours(endHour, endMinute, 0, 0);
-
-    // Check if the current time is outside of trading hours
-    if (currentTime < startTime || currentTime > endTime) {
-      toast.error(
-        `Bidding on ${exchange.toUpperCase()} is only allowed between ${startHour}:${
-          startMinute < 10 ? "0" + startMinute : startMinute
-        } AM and ${endHour}:${endMinute < 10 ? "0" + endMinute : endMinute} PM.`
-      );
-      return;
-    }
-
-    const token = localStorage.getItem("StocksUsertoken");
-    const decodedToken = jwtDecode(token);
-    const userId = decodedToken.id;
-
-    try {
-      const response = await axios.post(
-        "http://13.51.178.27:5000/api/var/client/add/bid",
-        {
-          userId: userId,
-          instrumentIdentifier: instrumentId,
-          bidPrice: inputPrice,
-          bidQuantity: quantity,
-          tradeType: action,
-          tradeId: tradeId,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      toast.success("Bid submitted successfully");
-      // Clear form or handle success here
-    } catch (error) {
-      toast.error("Error submitting bid");
-    }
-  };
 
   const buttonAction = determineButtonAction();
 

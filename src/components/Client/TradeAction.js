@@ -143,10 +143,10 @@ const InstrumentDetails = () => {
         : currentAmount - adjustmentAmount;
 
     if (newAmount < 0) {
-      setError("Cannot have a negative quantity.");
+      toast.error("Cannot have a negative quantity.");
       newAmount = 0;
     } else if (newAmount > maxAllowedAmount) {
-      setError(
+      toast.error(
         `Cannot exceed the maximum allowed amount of ${maxAllowedAmount}.`
       );
       newAmount = maxAllowedAmount;
@@ -165,13 +165,59 @@ const InstrumentDetails = () => {
       (stock) => stock.symbol === stockDetails?.name
     );
     if (blockedStock && parseFloat(amount) > blockedStock.quantity) {
-      return setError(
+      return toast.error(
         `Trade limit exceeded. Max quantity available is ${blockedStock.quantity}`
       );
     }
 
-    const lotSize = stockDetails?.QuotationLot; // Ensure lotSize is defined
+    const lotSize = stockDetails?.QuotationLot;
     const calculatedTradePercentage = (parseFloat(amount) / lotSize) * 100;
+
+    // Get current time in India/Kolkata timezone
+    const indiaTime = new Date().toLocaleString("en-US", {
+      timeZone: "Asia/Kolkata",
+    });
+    const currentTime = new Date(indiaTime);
+
+    // Get the current day of the week (0 = Sunday, 6 = Saturday)
+    const currentDay = currentTime.getDay();
+
+    // No trading on Saturday (6) or Sunday (0)
+    if (currentDay === 0 || currentDay === 6) {
+      return toast.error("Trading is not allowed on Saturdays and Sundays.");
+    }
+
+    let startHour, startMinute, endHour, endMinute;
+
+    // Set trading hours based on the exchange
+    if (stockDetails?.Exchange.toUpperCase() === "NSE") {
+      // NSE trading hours (9:15 AM to 3:30 PM)
+      startHour = 9;
+      startMinute = 15;
+      endHour = 15;
+      endMinute = 30;
+    } else if (stockDetails?.Exchange.toUpperCase() === "MCX") {
+      // MCX trading hours (9:15 AM to 11:30 PM)
+      startHour = 9;
+      startMinute = 15;
+      endHour = 23;
+      endMinute = 30;
+    }
+
+    const startTime = new Date(currentTime);
+    startTime.setHours(startHour, startMinute, 0, 0);
+
+    const endTime = new Date(currentTime);
+    endTime.setHours(endHour, endMinute, 0, 0);
+
+    // Check if the current time is outside of trading hours
+    if (currentTime < startTime || currentTime > endTime) {
+      return toast.error(
+        `Trading on ${stockDetails?.Exchange.toUpperCase()} is only allowed between ${startHour}:${
+          startMinute < 10 ? "0" + startMinute : startMinute
+        } AM and ${endHour}:${endMinute < 10 ? "0" + endMinute : endMinute} PM.`
+      );
+    }
 
     const data = {
       _id: userId,
@@ -203,24 +249,23 @@ const InstrumentDetails = () => {
     } catch (error) {
       console.error("Error making trade:", error);
 
-      // Check if the error response has data and message
       const errorMessage =
         error.response?.data?.message || "Error making trade";
       const remainingBuy = error.response?.data?.remainingBuy || 0;
       const remainingSell = error.response?.data?.remainingSell || 0;
 
-      // Calculate adjusted remaining values based on the lotSize
       const adjustedRemainingBuy = (remainingBuy / 100) * lotSize;
       const adjustedRemainingSell = (remainingSell / 100) * lotSize;
 
-      // Construct the complete error message
+      // Format the error message for display in the toast
       const completeErrorMessage = `
-Remaining Buy: ${adjustedRemainingBuy}\n
-Remaining Sell: ${adjustedRemainingSell}\n
-${errorMessage}
+Error: ${errorMessage}
+Remaining Buy: ${adjustedRemainingBuy} units
+Remaining Sell: ${adjustedRemainingSell} units
 `;
 
-      toast.error(completeErrorMessage);
+      // Display the full error in the toast and setError state
+      setError(completeErrorMessage);
     }
   };
 

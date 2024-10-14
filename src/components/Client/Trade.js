@@ -182,8 +182,114 @@ const BuySellPage = ({
     );
   };
 
+  //   const handleTrade = async () => {
+  //     const tradeType = isBuy ? "buy" : "sell";
+
+  //     // Calculate trade percentage based on the quantity and quotation lot
+  //     const calculatedTradePercentage = (parseFloat(amount) / lotSize) * 100;
+
+  //     const data = {
+  //       _id: clientId,
+  //       instrumentIdentifier: instrumentIdentifier,
+  //       name: name,
+  //       exchange: exchange,
+  //       trade_type: tradeType,
+  //       quantity: parseFloat(amount),
+  //       // If tradeType is "sell", make the percentage negative
+  //       tradePercentage:
+  //         tradeType === "sell"
+  //           ? -calculatedTradePercentage
+  //           : calculatedTradePercentage,
+  //       price: isBuy ? buyPrice : sellPrice,
+  //     };
+
+  //     try {
+  //       const response = await axios.post(
+  //         "http://13.51.178.27:5000/api/var/client/trades",
+  //         data,
+  //         {
+  //           headers: {
+  //             "Content-Type": "application/json",
+  //             Authorization: `Bearer ${localStorage.getItem("StocksUsertoken")}`,
+  //           },
+  //         }
+  //       );
+
+  //       // Log the response to the console
+  //       console.log("Trade Response:", response.data);
+  //       toast.success("Trade successful!");
+  //     } catch (error) {
+  //       // Check if the error response has data and message
+  //       const errorMessage =
+  //         error.response?.data?.message || "Error making trade";
+  //       const remainingBuy = error.response?.data?.remainingBuy || 0;
+  //       const remainingSell = error.response?.data?.remainingSell || 0;
+
+  //       // Calculate adjusted remaining values based on the lotSize
+  //       const adjustedRemainingBuy = (remainingBuy / 100) * lotSize;
+  //       const adjustedRemainingSell = (remainingSell / 100) * lotSize;
+
+  //       // Construct the complete error message with line breaks
+  //       const completeErrorMessage = `
+
+  //   Remaining Buy: ${adjustedRemainingBuy}\n
+  //   Remaining Sell: ${adjustedRemainingSell}
+  // `;
+
+  //       toast.error(completeErrorMessage);
+  //     }
+  //   };
+
   const handleTrade = async () => {
     const tradeType = isBuy ? "buy" : "sell";
+
+    // Get current time in India/Kolkata timezone using moment-timezone for accuracy
+    const indiaTime = new Date().toLocaleString("en-US", {
+      timeZone: "Asia/Kolkata",
+    });
+    const currentTime = new Date(indiaTime);
+
+    // Get the current day of the week (0 = Sunday, 6 = Saturday)
+    const currentDay = currentTime.getDay();
+
+    // No trading on Saturday (6) or Sunday (0)
+    if (currentDay === 0 || currentDay === 6) {
+      toast.error("Trading is not allowed on Saturdays and Sundays.");
+      return;
+    }
+
+    let startHour, startMinute, endHour, endMinute;
+
+    // Set trading hours based on the exchange
+    if (exchange.toUpperCase() === "NSE") {
+      // NSE trading hours (9:15 AM to 3:30 PM)
+      startHour = 9;
+      startMinute = 15;
+      endHour = 15;
+      endMinute = 30;
+    } else if (exchange.toUpperCase() === "MCX") {
+      // MCX trading hours (9:00 AM to 11:30 PM)
+      startHour = 9;
+      startMinute = 0;
+      endHour = 23;
+      endMinute = 30;
+    }
+
+    const startTime = new Date(currentTime);
+    startTime.setHours(startHour, startMinute, 0, 0);
+
+    const endTime = new Date(currentTime);
+    endTime.setHours(endHour, endMinute, 0, 0);
+
+    // Check if the current time is outside of trading hours
+    if (currentTime < startTime || currentTime > endTime) {
+      toast.error(
+        `Trading on ${exchange.toUpperCase()} is only allowed between ${startHour}:${
+          startMinute < 10 ? "0" + startMinute : startMinute
+        } AM and ${endHour}:${endMinute < 10 ? "0" + endMinute : endMinute} PM.`
+      );
+      return;
+    }
 
     // Calculate trade percentage based on the quantity and quotation lot
     const calculatedTradePercentage = (parseFloat(amount) / lotSize) * 100;
@@ -231,83 +337,14 @@ const BuySellPage = ({
 
       // Construct the complete error message with line breaks
       const completeErrorMessage = `
-
-  Remaining Buy: ${adjustedRemainingBuy}\n
-  Remaining Sell: ${adjustedRemainingSell}
-`;
+        ${errorMessage}\n
+        Remaining Buy: ${adjustedRemainingBuy}\n
+        Remaining Sell: ${adjustedRemainingSell}
+      `;
 
       toast.error(completeErrorMessage);
     }
   };
-
-  // const handleTrade = async () => {
-  //   const tradeType = isBuy ? "buy" : "sell";
-
-  //   // Get current time in India/Kolkata timezone
-  //   const indiaTime = new Date().toLocaleString("en-US", {
-  //     timeZone: "Asia/Kolkata",
-  //   });
-  //   const currentTime = new Date(indiaTime);
-
-  //   let startHour, startMinute, endHour, endMinute;
-
-  //   // Set trading hours based on the exchange
-  //   if (exchange.toUpperCase() === "NSE") {
-  //     // NSE trading hours (9:15 AM to 3:30 PM)
-  //     startHour = 9;
-  //     startMinute = 15;
-  //     endHour = 15;
-  //     endMinute = 30;
-  //   } else if (exchange.toUpperCase() === "MCX") {
-  //     // MCX trading hours (9:00 AM to 11:30 PM)
-  //     startHour = 9;
-  //     startMinute = 0;
-  //     endHour = 23;
-  //     endMinute = 30;
-  //   }
-
-  //   const startTime = new Date(currentTime);
-  //   startTime.setHours(startHour, startMinute, 0, 0);
-
-  //   const endTime = new Date(currentTime);
-  //   endTime.setHours(endHour, endMinute, 0, 0);
-
-  //   // Check if the current time is outside of trading hours
-  //   if (currentTime < startTime || currentTime > endTime) {
-  //     toast.error(
-  //       `Trading on ${exchange.toUpperCase()} is only allowed between ${startHour}:${
-  //         startMinute < 10 ? "0" + startMinute : startMinute
-  //       } AM and ${endHour}:${endMinute < 10 ? "0" + endMinute : endMinute} PM.`
-  //     );
-  //     return;
-  //   }
-
-  //   const data = {
-  //     _id: clientId,
-  //     instrumentIdentifier: instrumentIdentifier,
-  //     name: name,
-  //     exchange: exchange,
-  //     trade_type: tradeType,
-  //     quantity: parseFloat(amount),
-  //     price: isBuy ? buyPrice : sellPrice,
-  //   };
-
-  //   try {
-  //     const response = await axios.post(
-  //       "http://13.51.178.27:5000/api/var/client/trades",
-  //       data,
-  //       {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Authorization: `Bearer ${localStorage.getItem("StocksUsertoken")}`,
-  //         },
-  //       }
-  //     );
-  //     toast.success("Trade successful!");
-  //   } catch (error) {
-  //     toast.error("Cannot sell more than the maximum allowed");
-  //   }
-  // };
 
   const isMCX = exchange.toUpperCase() === "MCX";
 
