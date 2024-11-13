@@ -30,7 +30,8 @@ const InstrumentDetails = () => {
   const [error, setError] = useState(null);
   const [availableQuantity, setAvailableQuantity] = useState(0);
   const [maxAllowedAmount, setMaxAllowedAmount] = useState(Infinity);
-  const [netbanQuantity, setNetbanQuantity] = useState(30); // Assuming this is a fixed value
+  const [netbanQuantity, setNetbanQuantity] = useState();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   /**
    * Toggles the sidebar visibility.
@@ -325,7 +326,7 @@ const InstrumentDetails = () => {
       setError("Amount must be greater than zero.");
       return;
     }
-
+    setIsSubmitting(true);
     const data = {
       _id: userId,
       instrumentIdentifier,
@@ -372,6 +373,8 @@ const InstrumentDetails = () => {
       // Display the full error in the toast and setError state
       setError(completeErrorMessage);
       toast.error(completeErrorMessage);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -563,8 +566,10 @@ const InstrumentDetails = () => {
                 isBuy ? "bg-green-500 text-white" : "bg-red-500 text-white"
               } text-lg font-semibold`}
               onClick={handleTrade}
+              disabled={isSubmitting}
+              style={{ opacity: isSubmitting ? 0.5 : 1 }}
             >
-              {isBuy ? "BUY" : "SELL"}
+              {isSubmitting ? "Processing..." : isBuy ? "BUY" : "SELL"}
             </button>
           </div>
         </div>
