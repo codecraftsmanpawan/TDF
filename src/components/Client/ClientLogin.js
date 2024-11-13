@@ -33,7 +33,7 @@ const Login = () => {
       redirect: "follow",
     };
 
-    fetch("http://13.51.178.27:5000/api/var/client/clientLogin", requestOptions)
+    fetch("http://13.61.104.53:5000/api/var/client/clientLogin", requestOptions)
       .then((response) => {
         if (response.status === 401) {
           throw new Error("Invalid username or password");
@@ -65,30 +65,17 @@ const Login = () => {
   return (
     <>
       <ToastContainer />
-      <nav className="bg-blue-600 p-4">
+      <nav className="bg-gradient-to-b from-gray-700 to-black p-4">
         <div className="container mx-auto flex justify-between items-center">
           <div className="text-white text-xl font-bold">TradingApp</div>
-          <ul className="flex space-x-4 text-white">
-            <li>
-              <Link to="/superadmin/login" className="hover:underline">
-                SuperAdmin
-              </Link>
-            </li>
-            <li>
-              <Link to="/masteradmin/login" className="hover:underline">
-                MasterAdmin
-              </Link>
-            </li>
-          </ul>
         </div>
       </nav>
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="bg-white p-8 rounded shadow-md w-full md:max-w-md">
-          <h2 className="text-2xl font-bold mb-6 text-center">Client Login</h2>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-700 to-black">
+        <div className="bg-gradient-to-b from-gray-700 to-black p-8 rounded shadow-md w-full md:max-w-md">
           {error && <p className="text-red-500 text-center mb-4">{error}</p>}
           <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2" htmlFor="clientId">
+            <div className="mb-4 ">
+              <label className="block text-gray-100 mb-2" htmlFor="clientId">
                 Client ID
               </label>
               <input
@@ -100,7 +87,7 @@ const Login = () => {
               />
             </div>
             <div className="mb-6">
-              <label className="block text-gray-700 mb-2" htmlFor="password">
+              <label className="block text-gray-100 mb-2" htmlFor="password">
                 Password
               </label>
               <input
@@ -113,7 +100,7 @@ const Login = () => {
             </div>
             <button
               type="submit"
-              className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-300"
+              className="w-full bg-gradient-to-b from-gray-500 to-gray-700  text-white py-2 rounded-lg hover:bg-blue-600 transition duration-300"
             >
               Login
             </button>

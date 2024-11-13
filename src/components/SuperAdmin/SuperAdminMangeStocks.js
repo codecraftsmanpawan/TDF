@@ -20,7 +20,7 @@ const StockTable = () => {
       const token = localStorage.getItem("superAdminToken");
       const config = {
         method: "get",
-        url: "http://13.51.178.27:5000/api/var/superAdmin/api/stocks",
+        url: "http://13.61.104.53:5000/api/var/superAdmin/api/stocks",
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -40,7 +40,7 @@ const StockTable = () => {
       const token = localStorage.getItem("superAdminToken");
       const config = {
         method: "get",
-        url: "http://13.51.178.27:5000/api/var/superAdmin/api/blockStocks",
+        url: "http://13.61.104.53:5000/api/var/superAdmin/api/blockStocks",
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -110,7 +110,7 @@ const StockTable = () => {
 
       const config = {
         method: "post",
-        url: "http://13.51.178.27:5000/api/var/superAdmin/api/blockStock",
+        url: "http://13.61.104.53:5000/api/var/superAdmin/api/blockStock",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -137,7 +137,7 @@ const StockTable = () => {
 
       const config = {
         method: "delete",
-        url: `http://13.51.178.27:5000/api/var/superAdmin/api/blockStock/${symbol}`,
+        url: `http://13.61.104.53:5000/api/var/superAdmin/api/blockStock/${symbol}`,
         headers: {
           Authorization: `Bearer ${token}`,
         },

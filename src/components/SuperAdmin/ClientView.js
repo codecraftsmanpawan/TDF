@@ -57,7 +57,7 @@ const ClientCard = () => {
       try {
         const token = getToken();
         const response = await axios.get(
-          `http://13.51.178.27:5000/api/var/superAdmin/getClientById/${id}`,
+          `http://13.61.104.53:5000/api/var/superAdmin/getClientById/${id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -75,7 +75,7 @@ const ClientCard = () => {
       try {
         const token = getToken();
         const response = await axios.get(
-          `http://13.51.178.27:5000/api/var/client/trades/${id}`,
+          `http://13.61.104.53:5000/api/var/client/trades/${id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -100,7 +100,7 @@ const ClientCard = () => {
       try {
         const token = getToken();
         const response = await axios.get(
-          `http://13.51.178.27:5000/api/var/client/stocks/${instrumentIdentifier}`,
+          `http://13.61.104.53:5000/api/var/client/stocks/${instrumentIdentifier}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -121,7 +121,7 @@ const ClientCard = () => {
       try {
         const token = getToken();
         const response = await axios.get(
-          `http://13.51.178.27:5000/api/var/client/trades/client/brokerage/${id}`,
+          `http://13.61.104.53:5000/api/var/client/trades/client/brokerage/${id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -159,7 +159,7 @@ const ClientCard = () => {
       try {
         const token = getToken();
         await axios.delete(
-          `http://13.51.178.27:5000/api/var/client/trades/${tradeId}`,
+          `http://13.61.104.53:5000/api/var/client/trades/${tradeId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

@@ -60,7 +60,7 @@ function TradeChart() {
       if (userId) {
         try {
           const response = await axios.get(
-            `http://13.51.178.27:5000/api/var/client/trades/chart/${userId}`
+            `http://13.61.104.53:5000/api/var/client/trades/chart/${userId}`
           );
           setChartData(response.data.chartData);
         } catch (error) {
@@ -215,7 +215,7 @@ export default TradeChart;
 //         const fetchClientDetails = async () => {
 //             const config = {
 //                 method: 'get',
-//                 url: `http://13.51.178.27:5000/api/var/client/${userId}`,
+//                 url: `http://13.61.104.53:5000/api/var/client/${userId}`,
 //                 headers: {
 //                     'Authorization': `Bearer ${token}`
 //                 }
@@ -233,7 +233,7 @@ export default TradeChart;
 //         const fetchTrades = async () => {
 //             const config = {
 //                 method: 'get',
-//                 url: `http://13.51.178.27:5000/api/var/client/trades/mcx/${userId}`,
+//                 url: `http://13.61.104.53:5000/api/var/client/trades/mcx/${userId}`,
 //                 headers: {
 //                     'Authorization': `Bearer ${token}`
 //                 }

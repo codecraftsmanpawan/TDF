@@ -18,6 +18,12 @@ const Navbar = () => {
       </div>
       <div className="flex items-center">
         <Link
+          to="/tradingHours"
+          className="bg-pink-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300 mr-4"
+        >
+          Trading Hours Set
+        </Link>
+        <Link
           to="/superadmin/AddMasterId"
           className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300 mr-4"
         >

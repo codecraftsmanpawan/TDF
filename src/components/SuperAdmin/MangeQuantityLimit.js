@@ -51,7 +51,7 @@ const DataTable = () => {
 
         // Fetch items data
         const itemsResponse = await axios.get(
-          "http://13.51.178.27:5000/api/var/superAdmin/items",
+          "http://13.61.104.53:5000/api/var/superAdmin/items",
           {
             headers: {
               Authorization: `Bearer ${storedToken}`,
@@ -62,7 +62,7 @@ const DataTable = () => {
 
         // Fetch overall limit data
         const overallLimitResponse = await axios.get(
-          "http://13.51.178.27:5000/api/var/superAdmin/overall-limit",
+          "http://13.61.104.53:5000/api/var/superAdmin/overall-limit",
           {
             headers: {
               Authorization: `Bearer ${storedToken}`,
@@ -97,7 +97,7 @@ const DataTable = () => {
       }
 
       await axios.delete(
-        `http://13.51.178.27:5000/api/var/superAdmin/items/${itemToDelete.symbol}`,
+        `http://13.61.104.53:5000/api/var/superAdmin/items/${itemToDelete.symbol}`,
         {
           headers: {
             Authorization: `Bearer ${storedToken}`,

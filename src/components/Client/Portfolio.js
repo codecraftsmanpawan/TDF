@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode } from "jwt-decode"; // Corrected import
 import { useNavigate } from "react-router-dom";
 import TopNavbar from "./TopNavbar";
 import BottomNav from "./BottomNav";
@@ -10,6 +10,7 @@ import Bids from "./BidsPage";
 import Stoploss from "./StoplossPage";
 
 const StockPortfolio = () => {
+  // State variables
   const [trades, setTrades] = useState([]);
   const [bids, setBids] = useState([]);
   const [stoplosses, setStoplosses] = useState([]);
@@ -22,12 +23,15 @@ const StockPortfolio = () => {
   const [totalProfitLoss, setTotalProfitLoss] = useState("0.00");
   const [isToggled, setIsToggled] = useState(false);
 
+  // Toggle Sidebar
   const toggleView = () => {
     setIsToggled(!isToggled);
   };
 
+  // Retrieve token from localStorage
   const getToken = () => localStorage.getItem("StocksUsertoken");
 
+  // Decode token to get user ID
   const getUserIdFromToken = () => {
     const token = getToken();
     if (token) {
@@ -37,6 +41,7 @@ const StockPortfolio = () => {
     return null;
   };
 
+  // Check if current time is within trade price timeframe
   const isWithinTradePriceTimeframe = () => {
     const now = new Date();
     const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
@@ -51,6 +56,7 @@ const StockPortfolio = () => {
     return false;
   };
 
+  // Fetch trades on component mount
   useEffect(() => {
     const fetchTrades = async () => {
       try {
@@ -58,7 +64,7 @@ const StockPortfolio = () => {
         // console.log('User ID:', userId);
         if (userId) {
           const response = await axios.get(
-            `http://13.51.178.27:5000/api/var/client/trades/net-quantity/${userId}`,
+            `http://13.61.104.53:5000/api/var/client/trades/net-quantity/${userId}`,
             {
               headers: {
                 Authorization: `Bearer ${getToken()}`,
@@ -79,6 +85,7 @@ const StockPortfolio = () => {
     fetchTrades();
   }, []);
 
+  // Fetch real-time data for each trade and set interval for updates
   useEffect(() => {
     if (trades.length > 0) {
       trades.forEach((trade) => {
@@ -96,11 +103,12 @@ const StockPortfolio = () => {
     }
   }, [trades]);
 
+  // Function to fetch real-time data for a specific instrument
   const fetchRealTimeData = async (instrumentIdentifier) => {
     try {
       const token = getToken();
       const response = await axios.get(
-        `http://13.51.178.27:5000/api/var/client/stocks/${instrumentIdentifier}`,
+        `http://13.61.104.53:5000/api/var/client/stocks/${instrumentIdentifier}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -122,6 +130,7 @@ const StockPortfolio = () => {
     }
   };
 
+  // Function to calculate profit and loss
   const calculateProfitLoss = (
     totalInvestment,
     totalCurrentValue,
@@ -153,98 +162,9 @@ const StockPortfolio = () => {
     };
   };
 
-  const calculateTotalProfitLoss = () => {
-    let total = 0;
-
-    groupedTrades.forEach((tradeData) => {
-      const { totalInvestment, totalCurrentValue } = tradeData;
-      const { value: profitLossValue } = calculateProfitLoss(
-        totalInvestment,
-        totalCurrentValue,
-        tradeData.tradeData.tradeType,
-        tradeData.exchange,
-        tradeData.QuotationLot
-      );
-
-      const numericValue = parseFloat(profitLossValue.replace(/[^\d.-]/g, ""));
-      total += isNaN(numericValue) ? 0 : numericValue;
-    });
-
-    setTotalProfitLoss(
-      total >= 0 ? `₹${total.toFixed(2)}` : `-₹${Math.abs(total).toFixed(2)}`
-    );
-  };
-
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      const updateProfitLoss = async () => {
-        const token = getToken();
-        const userId = getUserIdFromToken();
-
-        if (!token) {
-          setError("No token found");
-          return;
-        }
-
-        if (!userId) {
-          setError("Invalid token or user ID not found");
-          return;
-        }
-
-        const profitLoss = parseFloat(totalProfitLoss.replace(/[^\d.-]/g, ""));
-
-        const data = JSON.stringify({
-          profitLoss,
-        });
-
-        const config = {
-          method: "patch",
-          maxBodyLength: Infinity,
-          url: `http://13.51.178.27:5000/api/var/client/updateProfitLoss/${userId}`,
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          data: data,
-        };
-
-        try {
-          const response = await axios.request(config);
-          setResponseData(response.data);
-        } catch (err) {
-          setError(err.message || "Something went wrong");
-        }
-      };
-
-      if (trades.length > 0 && Object.keys(realTimeData).length > 0) {
-        updateProfitLoss();
-        calculateTotalProfitLoss();
-      }
-    }, 1000);
-
-    return () => clearInterval(intervalId);
-  }, [trades, realTimeData, totalProfitLoss]);
-
-  useEffect(() => {
-    if (trades.length > 0 && Object.keys(realTimeData).length > 0) {
-      calculateTotalProfitLoss();
-    }
-  }, [trades, realTimeData]);
-
-  const handleRowClick = (instrumentIdentifier) => {
-    navigate(`/trade/detail/${instrumentIdentifier}`);
-  };
-
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-  };
-
-  const handleButtonClick = (trade) => {
-    const action = trade.action === "buy" ? "sell" : "buy";
-    navigate(`/trade/${action}/${trade.instrumentIdentifier}`);
-  };
-
-  const groupTradesByInstrument = (trades) => {
+  // Function to group trades by instrument, exchange, and action
+  // Added 'filterActive' parameter to optionally filter out expired trades
+  const groupTradesByInstrument = (trades, filterActive = false) => {
     const groupedTrades = trades.reduce((acc, trade) => {
       const key = `${trade.instrumentIdentifier}-${trade.exchange}-${trade.action}`;
       const existing = acc[key];
@@ -276,6 +196,9 @@ const StockPortfolio = () => {
       return acc;
     }, {});
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize to start of the day
+
     return Object.values(groupedTrades)
       .map((data) => {
         const {
@@ -301,9 +224,22 @@ const StockPortfolio = () => {
           Close: currentPrice,
           QuotationLot: stockData.QuotationLot || 1,
           tradeData: trades[0],
+          expiry: stockData.expiry,
         };
       })
       .filter((tradeData) => {
+        if (filterActive) {
+          // Filter only active trades
+          const expiryDate = new Date(tradeData.expiry);
+          expiryDate.setHours(0, 0, 0, 0);
+          return (
+            (tradeData.tradeData.action === "sell" ||
+              (tradeData.totalQuantity > 0 &&
+                tradeData.tradeData.action === "buy")) &&
+            expiryDate >= today
+          );
+        }
+        // If not filtering, include all trades
         return (
           tradeData.tradeData.action === "sell" ||
           (tradeData.totalQuantity > 0 && tradeData.tradeData.action === "buy")
@@ -311,40 +247,149 @@ const StockPortfolio = () => {
       });
   };
 
-  const groupedTrades = groupTradesByInstrument(trades);
+  // Group all trades for total Profit/Loss
+  const groupedTradesAll = groupTradesByInstrument(trades, false);
 
+  // Group active trades for display
+  const groupedTradesActive = groupTradesByInstrument(trades, true);
+
+  // Function to calculate total profit and loss based on all trades
+  const calculateTotalProfitLoss = () => {
+    let total = 0;
+
+    groupedTradesAll.forEach((tradeData) => {
+      const { totalInvestment, totalCurrentValue } = tradeData;
+      const { value: profitLossValue } = calculateProfitLoss(
+        totalInvestment,
+        totalCurrentValue,
+        tradeData.tradeData.tradeType,
+        tradeData.exchange,
+        tradeData.QuotationLot
+      );
+
+      const numericValue = parseFloat(profitLossValue.replace(/[^\d.-]/g, ""));
+      total += isNaN(numericValue) ? 0 : numericValue;
+    });
+
+    setTotalProfitLoss(
+      total >= 0 ? `₹${total.toFixed(2)}` : `-₹${Math.abs(total).toFixed(2)}`
+    );
+  };
+
+  // Recalculate total profit and loss when trades or real-time data change
+  useEffect(() => {
+    if (trades.length > 0 && Object.keys(realTimeData).length > 0) {
+      calculateTotalProfitLoss();
+    }
+  }, [trades, realTimeData]);
+
+  // Update profit and loss periodically and send updates to backend
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      const updateProfitLoss = async () => {
+        const token = getToken();
+        const userId = getUserIdFromToken();
+
+        if (!token) {
+          setError("No token found");
+          return;
+        }
+
+        if (!userId) {
+          setError("Invalid token or user ID not found");
+          return;
+        }
+
+        const profitLoss = parseFloat(totalProfitLoss.replace(/[^\d.-]/g, ""));
+
+        const data = JSON.stringify({
+          profitLoss,
+        });
+
+        const config = {
+          method: "patch",
+          maxBodyLength: Infinity,
+          url: `http://13.61.104.53:5000/api/var/client/updateProfitLoss/${userId}`,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          data: data,
+        };
+
+        try {
+          const response = await axios.request(config);
+          setResponseData(response.data);
+        } catch (err) {
+          setError(err.message || "Something went wrong");
+        }
+      };
+
+      if (trades.length > 0 && Object.keys(realTimeData).length > 0) {
+        updateProfitLoss();
+      }
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [trades, realTimeData, totalProfitLoss]);
+
+  // Handle row click to navigate to trade detail
+  const handleRowClick = (instrumentIdentifier) => {
+    navigate(`/trade/detail/${instrumentIdentifier}`);
+  };
+
+  // Handle tab change
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+  };
+
+  // Handle action button click (buy/sell)
+  const handleButtonClick = (trade) => {
+    const action = trade.action === "buy" ? "sell" : "buy";
+    navigate(`/trade/${action}/${trade.instrumentIdentifier}`);
+  };
+
+  // Show spinner while loading
   if (loading) {
     return <Spinner />;
   }
 
+  // Handle navigation to history
   const handleNavigation = () => {
     navigate("/history");
   };
 
+  // Format instrument identifier
   const formatInstrumentIdentifier = (identifier) => {
     const match = identifier.match(/(\d{2}[A-Z]{3}\d{4})/);
     return match ? match[0] : identifier;
   };
 
+  // Get button color based on action
   const getButtonColor = (action) => {
     return action === "sell" ? "bg-red-500" : "bg-green-500";
   };
 
+  // Format quantity based on exchange
   const formatQuantity = (quantity, exchange) => {
     return exchange === "MCX" ? `${quantity} Lot` : `${quantity} Share`;
   };
 
   return (
     <>
+      {/* Top Navbar and Sidebar */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-gray-700 to-gray-800 shadow-md">
         <TopNavbar toggleSidebar={toggleView} />
         <Sidebar isOpen={isToggled} closeSidebar={toggleView} />
       </div>
+
+      {/* Main Container */}
       <div className="container mx-auto p-2 mt-16 bg-gradient-to-b from-gray-700 to-gray-800">
         <h2 className="text-2xl font-bold mb-4 mt-4 text-white">
           Stock Portfolio
         </h2>
 
+        {/* Total Profit/Loss Display */}
         <div className="mb-4">
           <div className="flex justify-between mb-2">
             <span className="text-xl font-semibold text-white">
@@ -353,6 +398,7 @@ const StockPortfolio = () => {
           </div>
         </div>
 
+        {/* Tabs and Content */}
         <div className="bg-gradient-to-b from-gray-700 to-gray-800 shadow-md rounded p-4 mb-12">
           <div className="flex border-b">
             <button
@@ -393,6 +439,7 @@ const StockPortfolio = () => {
             </button>
           </div>
 
+          {/* Trades Tab Content */}
           {activeTab === "trades" && (
             <div className="overflow-x-auto mt-4">
               <table className="min-w-full bg-white table-auto">
@@ -413,8 +460,8 @@ const StockPortfolio = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {groupedTrades.length > 0 ? (
-                    groupedTrades.map((tradeData, index) => {
+                  {groupedTradesActive.length > 0 ? (
+                    groupedTradesActive.map((tradeData, index) => {
                       const {
                         instrumentIdentifier,
                         exchange,
@@ -423,6 +470,7 @@ const StockPortfolio = () => {
                         totalCurrentValue,
                         tradeData: trade,
                         QuotationLot,
+                        expiry, // Extract expiry
                       } = tradeData;
                       const stockData =
                         realTimeData[instrumentIdentifier] || {};
@@ -467,8 +515,7 @@ const StockPortfolio = () => {
                           >
                             {trade.tradeType}
                           </td>
-                          <td className="py-2 px-4 border-b">{displayPrice}</td>{" "}
-                          {/* Display the appropriate price */}
+                          <td className="py-2 px-4 border-b">{displayPrice}</td>
                           <td className="py-2 px-4 border-b">
                             ₹{totalInvestment.toFixed(2)}
                           </td>
@@ -498,13 +545,18 @@ const StockPortfolio = () => {
                               {trade.action}
                             </button>
                           </td>
+                          {/* <td className="py-2 px-4 border-b">
+                            {expiry
+                              ? new Date(expiry).toLocaleDateString()
+                              : "N/A"}
+                          </td> */}
                         </tr>
                       );
                     })
                   ) : (
                     <tr>
-                      <td colSpan="12" className="text-center py-4">
-                        No trades available.
+                      <td colSpan="13" className="text-center py-4">
+                        No active trades available.
                       </td>
                     </tr>
                   )}
@@ -513,10 +565,13 @@ const StockPortfolio = () => {
             </div>
           )}
 
+          {/* Bids and Stoploss Tabs */}
           {activeTab === "bids" && <Bids bids={bids} />}
           {activeTab === "stoploss" && <Stoploss stoplosses={stoplosses} />}
         </div>
       </div>
+
+      {/* Bottom Navigation */}
       <BottomNav />
     </>
   );

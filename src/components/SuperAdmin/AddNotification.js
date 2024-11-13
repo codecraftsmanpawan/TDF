@@ -18,7 +18,7 @@ const NotificationPage = () => {
   const fetchNotifications = async () => {
     try {
       const response = await axios.get(
-        "http://13.51.178.27:5000/api/var/superAdmin/notifications"
+        "http://13.61.104.53:5000/api/var/superAdmin/notifications"
       );
       setNotifications(response.data);
     } catch (error) {
@@ -33,7 +33,7 @@ const NotificationPage = () => {
       if (editingId) {
         // Update existing notification
         await axios.put(
-          `http://13.51.178.27:5000/api/var/superAdmin/notifications/${editingId}`,
+          `http://13.61.104.53:5000/api/var/superAdmin/notifications/${editingId}`,
           { title, message }
         );
         toast.success("Notification updated successfully");
@@ -41,7 +41,7 @@ const NotificationPage = () => {
       } else {
         // Add new notification
         await axios.post(
-          "http://13.51.178.27:5000/api/var/superAdmin/notifications",
+          "http://13.61.104.53:5000/api/var/superAdmin/notifications",
           { title, message }
         );
         toast.success("Notification created successfully");
@@ -58,7 +58,7 @@ const NotificationPage = () => {
   const handleDeleteNotification = async (id) => {
     try {
       await axios.delete(
-        `http://13.51.178.27:5000/api/var/superAdmin/notifications/${id}`
+        `http://13.61.104.53:5000/api/var/superAdmin/notifications/${id}`
       );
       toast.success("Notification deleted successfully");
       fetchNotifications();

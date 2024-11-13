@@ -181,7 +181,7 @@ const ClientDashboard = () => {
       }
 
       const wishlistResponse = await axios.get(
-        `http://13.51.178.27:5000/api/var/client/wishlist/${userId}`,
+        `http://13.61.104.53:5000/api/var/client/wishlist/${userId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -200,7 +200,7 @@ const ClientDashboard = () => {
 
       const stockPromises = wishlistResponse.data.items.map((item) =>
         axios.get(
-          `http://13.51.178.27:5000/api/var/client/stocks/${item.instrumentIdentifier}`,
+          `http://13.61.104.53:5000/api/var/client/stocks/${item.instrumentIdentifier}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -393,7 +393,7 @@ const ClientDashboard = () => {
             </div>
 
             {/* Stock Cards */}
-            <div className="max-h-80 overflow-y-auto">
+            <div className="max-h-100 mb-10 overflow-y-auto">
               {wishlistStocks.length === 0 ? (
                 <p className="text-center text-gray-500">
                   Your wishlist is empty.

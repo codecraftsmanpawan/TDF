@@ -18,7 +18,7 @@ const TradeScreen = () => {
     const fetchStockData = async () => {
       try {
         const response = await axios.get(
-          `http://13.51.178.27:5000/api/var/privateAdmin/stocks/${instrumentId}`,
+          `http://13.61.104.53:5000/api/var/privateAdmin/stocks/${instrumentId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("****xxx*****")}`,
@@ -174,7 +174,7 @@ const BuySellPage = ({
 
     try {
       const response = await axios.post(
-        "http://13.51.178.27:5000/api/var/privateAdmin/trades",
+        "http://13.61.104.53:5000/api/var/privateAdmin/trades",
         data,
         {
           headers: {
@@ -225,7 +225,7 @@ ${errorMessage}
 
   //   try {
   //     const response = await axios.post(
-  //       "http://13.51.178.27:5000/api/var/privateAdmin/trades",
+  //       "http://13.61.104.53:5000/api/var/privateAdmin/trades",
   //       data,
   //       {
   //         headers: {

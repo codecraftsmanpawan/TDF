@@ -22,7 +22,7 @@ const StockDetailPage = () => {
   const fetchStockDetails = async () => {
     try {
       const response = await axios.get(
-        `http://13.51.178.27:5000/api/var/client/stocks/${instrumentId}`,
+        `http://13.61.104.53:5000/api/var/client/stocks/${instrumentId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("StocksUsertoken")}`,

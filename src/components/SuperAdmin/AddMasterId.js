@@ -48,7 +48,7 @@ const AddMasterAdmin = () => {
 
     try {
       const { data: response } = await axios.post(
-        "http://13.51.178.27:5000/api/var/superAdmin/add-masterAdmin",
+        "http://13.61.104.53:5000/api/var/superAdmin/add-masterAdmin",
         data,
         {
           headers: {

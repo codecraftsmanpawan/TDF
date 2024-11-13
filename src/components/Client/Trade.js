@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode } from "jwt-decode"; // Corrected import
 import TopNavbar from "./TopNavbar";
 import BottomNav from "./BottomNav";
 import Sidebar from "./SideBar";
@@ -9,63 +9,92 @@ import Spinner from "./Spinner";
 import { FaMinus, FaPlus } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
+/**
+ * TradeScreen Component
+ * - Fetches stock data and trading hours based on the selected instrument.
+ * - Displays stock information and integrates the BuySellPage component.
+ */
 const TradeScreen = () => {
   const { instrumentId } = useParams();
   const [isToggled, setIsToggled] = useState(false);
   const [stockData, setStockData] = useState(null);
+  const [tradingHours, setTradingHours] = useState(null); // State for trading hours
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [clientId, setClientId] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false); // State for button disabled status
 
+  /**
+   * Toggles the sidebar visibility.
+   */
   const toggleView = () => {
     setIsToggled(!isToggled);
   };
+
+  /**
+   * Fetches stock data and trading hours from the API.
+   * Implements polling every 10 seconds to refresh data.
+   */
   useEffect(() => {
-    const fetchStockData = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get(
-          `http://13.51.178.27:5000/api/var/client/stocks/${instrumentId}`,
+        const token = localStorage.getItem("StocksUsertoken");
+        if (!token) {
+          throw new Error("No authentication token found");
+        }
+
+        // Decode token to get client ID
+        const decodedToken = jwtDecode(token);
+        setClientId(decodedToken.id);
+
+        // Fetch stock data
+        const stockResponse = await axios.get(
+          `http://13.61.104.53:5000/api/var/client/stocks/${instrumentId}`,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem(
-                "StocksUsertoken"
-              )}`,
+              Authorization: `Bearer ${token}`,
             },
           }
         );
-        setStockData(response.data);
+        setStockData(stockResponse.data);
+
+        // Fetch trading hours based on exchange
+        const exchange = stockResponse.data.Exchange;
+        const tradingHoursResponse = await axios.get(
+          `http://13.61.104.53:5000/api/var/trading-hours/${exchange}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setTradingHours(tradingHoursResponse.data);
+
         setLoading(false);
-      } catch (error) {
-        setError("Error fetching stock data");
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError(
+          err.response?.data?.message || "Error fetching stock or trading data"
+        );
         setLoading(false);
       }
     };
 
-    fetchStockData();
+    fetchData();
 
-    // Set up polling every second
+    // Set up polling every 10 seconds
     const intervalId = setInterval(() => {
-      fetchStockData();
-    }, 1000);
+      fetchData();
+    }, 10000); // 10,000 ms = 10 seconds
 
     // Clean up interval on component unmount
     return () => clearInterval(intervalId);
   }, [instrumentId]);
 
-  useEffect(() => {
-    // Decode the token and extract client_id
-    const token = localStorage.getItem("StocksUsertoken");
-    if (token) {
-      try {
-        const decodedToken = jwtDecode(token);
-        setClientId(decodedToken.id);
-      } catch (e) {
-        console.error("Error decoding token:", e);
-        setError("Error decoding token");
-      }
-    }
-  }, []);
-
+  /**
+   * Renders a loading spinner while data is being fetched.
+   */
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-100">
@@ -74,26 +103,24 @@ const TradeScreen = () => {
     );
   }
 
-  // if (error) {
-  //     return (
-  //         <div className="flex justify-center items-center h-screen bg-gray-100">
-  //             <div className="text-red-500 text-center">
-  //                 <p>{error}</p>
-  //             </div>
-  //         </div>
-  //     );
-  // }
+  /**
+   * Renders an error message if data fetching fails.
+   */
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-gray-100">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+  }
 
+  // Destructure necessary fields from stock data
   const {
     Exchange = "N/A",
     InstrumentIdentifier = "N/A",
     BuyPrice = 0,
     SellPrice = 0,
     name = "N/A",
-    High = 0,
-    Low = 0,
-    LastTradePrice = 0,
-    Open = 0,
     QuotationLot = 0,
   } = stockData || {};
 
@@ -122,15 +149,24 @@ const TradeScreen = () => {
           </div>
 
           {/* Buy/Sell Section */}
-          <BuySellPage
-            buyPrice={BuyPrice}
-            sellPrice={SellPrice}
-            lotSize={QuotationLot}
-            exchange={Exchange}
-            instrumentIdentifier={InstrumentIdentifier}
-            name={name}
-            clientId={clientId}
-          />
+          {tradingHours ? (
+            <BuySellPage
+              buyPrice={BuyPrice}
+              sellPrice={SellPrice}
+              lotSize={QuotationLot}
+              exchange={Exchange}
+              instrumentIdentifier={InstrumentIdentifier}
+              name={name}
+              clientId={clientId}
+              tradingHours={tradingHours} // Passing trading hours as props
+              isSubmitting={isSubmitting} // Passing isSubmitting to BuySellPage
+              setIsSubmitting={setIsSubmitting} // Passing setIsSubmitting to handle submit state
+            />
+          ) : (
+            <p className="text-center text-red-500">
+              Unable to load trading hours.
+            </p>
+          )}
         </div>
       </div>
 
@@ -138,12 +174,19 @@ const TradeScreen = () => {
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-white shadow-md">
         <BottomNav />
       </div>
-      {/* Toast Container */}
+
+      {/* Toast Container for Notifications */}
       <ToastContainer />
     </>
   );
 };
 
+/**
+ * BuySellPage Component
+ * - Handles buy/sell operations based on user interactions.
+ * - Validates trading time against fetched trading hours.
+ * - Submits trade data to the API.
+ */
 const BuySellPage = ({
   buyPrice,
   sellPrice,
@@ -152,128 +195,85 @@ const BuySellPage = ({
   instrumentIdentifier,
   name,
   clientId,
+  tradingHours, // Receive trading hours as props
+  isSubmitting, // Receive isSubmitting prop
+  setIsSubmitting, // Receive setIsSubmitting prop
 }) => {
   const [isBuy, setIsBuy] = useState(true);
   const [amount, setAmount] = useState(0);
   const [error, setError] = useState("");
 
+  /**
+   * Handles switching between Buy and Sell tabs.
+   * Resets the amount when switching.
+   * @param {string} tab - "buy" or "sell"
+   */
   const handleTabChange = (tab) => {
     setIsBuy(tab === "buy");
     setAmount(0);
+    setError("");
   };
 
+  /**
+   * Increases the amount based on the selected percentage.
+   * @param {number} percentage - Percentage to increase
+   */
   const handlePercentageClick = (percentage) => {
     const calculatedAmount = (lotSize * percentage) / 100;
     setAmount((prevAmount) =>
       (parseFloat(prevAmount) + calculatedAmount).toFixed(2)
     );
+    setError("");
   };
 
+  /**
+   * Decreases the amount based on the selected percentage.
+   * Ensures the amount doesn't go below zero.
+   * @param {number} percentage - Percentage to decrease
+   */
   const handleDecreasePercentageClick = (percentage) => {
     const calculatedAmount = (lotSize * percentage) / 100;
     setAmount((prevAmount) =>
       Math.max(0, (parseFloat(prevAmount) - calculatedAmount).toFixed(2))
     );
+    setError("");
   };
-
-  const handleAmountChange = (change) => {
-    setAmount((prevAmount) =>
-      Math.max(0, (parseFloat(prevAmount) + change).toFixed(2))
-    );
+  /**
+   * Formats time from 24-hour to 12-hour AM/PM format.
+   * @param {number} hour - Hour in 24-hour format
+   * @param {number} minute - Minute
+   * @returns {string} - Formatted time string
+   */
+  const formatTime = (hour, minute) => {
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const formattedHour = hour % 12 === 0 ? 12 : hour % 12;
+    const formattedMinute = minute < 10 ? `0${minute}` : minute;
+    return `${formattedHour}:${formattedMinute} ${ampm}`;
   };
-
-  //   const handleTrade = async () => {
-  //     const tradeType = isBuy ? "buy" : "sell";
-
-  //     // Calculate trade percentage based on the quantity and quotation lot
-  //     const calculatedTradePercentage = (parseFloat(amount) / lotSize) * 100;
-
-  //     const data = {
-  //       _id: clientId,
-  //       instrumentIdentifier: instrumentIdentifier,
-  //       name: name,
-  //       exchange: exchange,
-  //       trade_type: tradeType,
-  //       quantity: parseFloat(amount),
-  //       // If tradeType is "sell", make the percentage negative
-  //       tradePercentage:
-  //         tradeType === "sell"
-  //           ? -calculatedTradePercentage
-  //           : calculatedTradePercentage,
-  //       price: isBuy ? buyPrice : sellPrice,
-  //     };
-
-  //     try {
-  //       const response = await axios.post(
-  //         "http://13.51.178.27:5000/api/var/client/trades",
-  //         data,
-  //         {
-  //           headers: {
-  //             "Content-Type": "application/json",
-  //             Authorization: `Bearer ${localStorage.getItem("StocksUsertoken")}`,
-  //           },
-  //         }
-  //       );
-
-  //       // Log the response to the console
-  //       console.log("Trade Response:", response.data);
-  //       toast.success("Trade successful!");
-  //     } catch (error) {
-  //       // Check if the error response has data and message
-  //       const errorMessage =
-  //         error.response?.data?.message || "Error making trade";
-  //       const remainingBuy = error.response?.data?.remainingBuy || 0;
-  //       const remainingSell = error.response?.data?.remainingSell || 0;
-
-  //       // Calculate adjusted remaining values based on the lotSize
-  //       const adjustedRemainingBuy = (remainingBuy / 100) * lotSize;
-  //       const adjustedRemainingSell = (remainingSell / 100) * lotSize;
-
-  //       // Construct the complete error message with line breaks
-  //       const completeErrorMessage = `
-
-  //   Remaining Buy: ${adjustedRemainingBuy}\n
-  //   Remaining Sell: ${adjustedRemainingSell}
-  // `;
-
-  //       toast.error(completeErrorMessage);
-  //     }
-  //   };
-
+  /**
+   * Handles the trade submission.
+   * Validates trading time and submits data to the API.
+   */
   const handleTrade = async () => {
+    setIsSubmitting(true); // Set isSubmitting to true before API call
+
     const tradeType = isBuy ? "buy" : "sell";
 
-    // Get current time in India/Kolkata timezone using moment-timezone for accuracy
-    const indiaTime = new Date().toLocaleString("en-US", {
+    // Get current time in India timezone
+    const indiaTimeString = new Date().toLocaleString("en-US", {
       timeZone: "Asia/Kolkata",
     });
-    const currentTime = new Date(indiaTime);
-
-    // Get the current day of the week (0 = Sunday, 6 = Saturday)
+    const currentTime = new Date(indiaTimeString);
     const currentDay = currentTime.getDay();
 
-    // No trading on Saturday (6) or Sunday (0)
+    // Check if current day is Saturday or Sunday
     if (currentDay === 0 || currentDay === 6) {
       toast.error("Trading is not allowed on Saturdays and Sundays.");
+      setIsSubmitting(false); // Reset isSubmitting
       return;
     }
 
-    let startHour, startMinute, endHour, endMinute;
-
-    // Set trading hours based on the exchange
-    if (exchange.toUpperCase() === "NSE") {
-      // NSE trading hours (9:15 AM to 3:30 PM)
-      startHour = 9;
-      startMinute = 15;
-      endHour = 15;
-      endMinute = 30;
-    } else if (exchange.toUpperCase() === "MCX") {
-      // MCX trading hours (9:00 AM to 11:30 PM)
-      startHour = 9;
-      startMinute = 0;
-      endHour = 23;
-      endMinute = 30;
-    }
+    const { startHour, startMinute, endHour, endMinute } = tradingHours;
 
     const startTime = new Date(currentTime);
     startTime.setHours(startHour, startMinute, 0, 0);
@@ -281,27 +281,34 @@ const BuySellPage = ({
     const endTime = new Date(currentTime);
     endTime.setHours(endHour, endMinute, 0, 0);
 
-    // Check if the current time is outside of trading hours
+    // Check if current time is within trading hours
     if (currentTime < startTime || currentTime > endTime) {
       toast.error(
-        `Trading on ${exchange.toUpperCase()} is only allowed between ${startHour}:${
-          startMinute < 10 ? "0" + startMinute : startMinute
-        } AM and ${endHour}:${endMinute < 10 ? "0" + endMinute : endMinute} PM.`
+        `Trading on ${exchange.toUpperCase()} is only allowed between ${formatTime(
+          startHour,
+          startMinute
+        )} and ${formatTime(endHour, endMinute)}.`
       );
+      setIsSubmitting(false); // Reset isSubmitting
       return;
     }
 
-    // Calculate trade percentage based on the quantity and quotation lot
+    // Validate that amount is greater than zero
+    if (parseFloat(amount) <= 0) {
+      setError("Amount must be greater than zero.");
+      setIsSubmitting(false); // Reset isSubmitting
+      return;
+    }
+
     const calculatedTradePercentage = (parseFloat(amount) / lotSize) * 100;
 
     const data = {
       _id: clientId,
-      instrumentIdentifier: instrumentIdentifier,
-      name: name,
-      exchange: exchange,
+      instrumentIdentifier,
+      name,
+      exchange,
       trade_type: tradeType,
       quantity: parseFloat(amount),
-      // If tradeType is "sell", make the percentage negative
       tradePercentage:
         tradeType === "sell"
           ? -calculatedTradePercentage
@@ -311,7 +318,7 @@ const BuySellPage = ({
 
     try {
       const response = await axios.post(
-        "http://13.51.178.27:5000/api/var/client/trades",
+        "http://13.61.104.53:5000/api/var/client/trades",
         data,
         {
           headers: {
@@ -321,32 +328,23 @@ const BuySellPage = ({
         }
       );
 
-      // Log the response to the console
       console.log("Trade Response:", response.data);
       toast.success("Trade successful!");
-    } catch (error) {
-      // Check if the error response has data and message
-      const errorMessage =
-        error.response?.data?.message || "Error making trade";
-      const remainingBuy = error.response?.data?.remainingBuy || 0;
-      const remainingSell = error.response?.data?.remainingSell || 0;
-
-      // Calculate adjusted remaining values based on the lotSize
-      const adjustedRemainingBuy = (remainingBuy / 100) * lotSize;
-      const adjustedRemainingSell = (remainingSell / 100) * lotSize;
-
-      // Construct the complete error message with line breaks
-      const completeErrorMessage = `
-        ${errorMessage}\n
-        Remaining Buy: ${adjustedRemainingBuy}\n
-        Remaining Sell: ${adjustedRemainingSell}
-      `;
-
-      toast.error(completeErrorMessage);
+      setAmount(0); // Reset amount after successful trade
+    } catch (err) {
+      console.error("Trade Error:", err);
+      const errorMessage = err.response?.data?.message || "Cannot commit trade";
+      toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false); // Reset isSubmitting after API call
     }
   };
 
+  // Determine if the exchange is MCX and if the instrument is special
   const isMCX = exchange.toUpperCase() === "MCX";
+  const isSpecialInstrument = ["CRUDEOIL", "COPPER", "NATURALGAS"].includes(
+    name.toUpperCase()
+  );
 
   return (
     <div className="flex justify-center items-center h-full">
@@ -406,7 +404,26 @@ const BuySellPage = ({
             />
           </div>
 
+          {/* Percentage Buttons */}
           <div className="flex justify-around mb-4 gap-2">
+            {isMCX && isSpecialInstrument && (
+              <>
+                <button
+                  className="flex items-center space-x-2 text-blue-900 bg-red-600 p-1 rounded-full"
+                  onClick={() => handleDecreasePercentageClick(50)}
+                >
+                  <FaMinus className="text-white" />
+                </button>
+                <span>50%</span>
+                <button
+                  className="flex items-center space-x-2 text-blue-900 bg-green-600 p-1 rounded-full"
+                  onClick={() => handlePercentageClick(50)}
+                >
+                  <FaPlus className="text-white" />
+                </button>
+              </>
+            )}
+
             {!isMCX && (
               <>
                 <button
@@ -439,6 +456,7 @@ const BuySellPage = ({
               </>
             )}
 
+            {/* Only one 100% button displayed here */}
             <button
               className="flex items-center space-x-2 text-blue-900 bg-red-600 p-1 rounded-full"
               onClick={() => handleDecreasePercentageClick(100)}
@@ -459,8 +477,10 @@ const BuySellPage = ({
               isBuy ? "bg-green-500 text-white" : "bg-red-500 text-white"
             } text-lg font-semibold`}
             onClick={handleTrade}
+            disabled={isSubmitting} // Disable button if submitting
           >
-            {isBuy ? "BUY" : "SELL"}
+            {isSubmitting ? "Processing..." : isBuy ? "BUY" : "SELL"}{" "}
+            {/* Display loading text when submitting */}
           </button>
 
           {error && (

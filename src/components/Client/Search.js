@@ -33,7 +33,7 @@ const StockSearch = () => {
     const fetchBlockedStocks = async () => {
       try {
         const response = await axios.get(
-          "http://13.51.178.27:5000/api/var/Wishlist/blockstocks"
+          "http://13.61.104.53:5000/api/var/Wishlist/blockstocks"
         );
         setBlockedStocks(response.data.map((stock) => stock.symbol));
       } catch (error) {
@@ -63,7 +63,7 @@ const StockSearch = () => {
         }
 
         const wishlistResponse = await axios.get(
-          `http://13.51.178.27:5000/api/var/client/wishlist/${userId}`,
+          `http://13.61.104.53:5000/api/var/client/wishlist/${userId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -90,7 +90,7 @@ const StockSearch = () => {
     if (searchTerm.trim()) {
       setLoading(true);
       axios
-        .get("http://13.51.178.27:5000/api/var/client/stocks/search", {
+        .get("http://13.61.104.53:5000/api/var/client/stocks/search", {
           params: { name: searchTerm },
           headers: {
             Authorization: `Bearer ${localStorage.getItem("StocksUsertoken")}`,
@@ -128,7 +128,7 @@ const StockSearch = () => {
 
     try {
       const response = await axios.post(
-        "http://13.51.178.27:5000/api/var/client/wishlist/add",
+        "http://13.61.104.53:5000/api/var/client/wishlist/add",
         {
           userId,
           item: {
@@ -169,7 +169,7 @@ const StockSearch = () => {
 
     axios
       .delete(
-        `http://13.51.178.27:5000/api/var/client/wishlist/remove/${userId}/${itemId}`,
+        `http://13.61.104.53:5000/api/var/client/wishlist/remove/${userId}/${itemId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -221,6 +221,7 @@ const StockSearch = () => {
                 className="mb-6 text-white"
                 InputProps={{
                   ...params.InputProps,
+                  style: { color: "white" },
                   className:
                     "bg-gradient-to-b from-gray-700 to-gray-800 rounded-lg border-2 border-gray-200 focus:border-gray-200 shadow-sm mb-4 text-gray-100",
                   endAdornment: (
@@ -231,7 +232,8 @@ const StockSearch = () => {
                   ),
                 }}
                 InputLabelProps={{
-                  className: "text-gray-200 font-medium",
+                  style: { color: "white" },
+                  className: "font-medium",
                 }}
               />
             )}
@@ -249,6 +251,7 @@ const StockSearch = () => {
               </div>
             )}
           />
+
           {!loading && !error && stocks.length === 0 && (
             <Typography className="text-gray-200 mb-4 mt-8 text-center font-medium">
               No stocks found.

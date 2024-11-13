@@ -31,8 +31,10 @@ const Stoploss = () => {
 
         if (!userId) return;
 
+        setLoading(true);
+
         const stoplossResponse = await axios.get(
-          `http://13.51.178.27:5000/api/var/client/stoploss/${userId}`,
+          `http://13.61.104.53:5000/api/var/client/stoploss/${userId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -43,7 +45,7 @@ const Stoploss = () => {
           (stoploss) => stoploss.instrumentIdentifier
         );
         const stockPromises = instrumentIdentifiers.map((id) =>
-          axios.get(`http://13.51.178.27:5000/api/var/client/stocks/${id}`, {
+          axios.get(`http://13.61.104.53:5000/api/var/client/stocks/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
           })
         );
@@ -55,7 +57,6 @@ const Stoploss = () => {
         }, {});
         setStockData(stockDataMap);
       } catch (error) {
-        // toast.error("Error fetching stoplosses.");
       } finally {
         setLoading(false);
       }
@@ -65,7 +66,12 @@ const Stoploss = () => {
   }, [userId]);
 
   const handleEditClick = (stoploss) => {
-    setSelectedStoploss(stoploss);
+    const stock = stockData[stoploss.instrumentIdentifier] || {};
+    setSelectedStoploss({
+      ...stoploss,
+      stockName: stock.name || "N/A",
+      stockExchange: stock.Exchange || "N/A",
+    });
     setEditModalOpen(true);
   };
 
@@ -78,7 +84,7 @@ const Stoploss = () => {
     try {
       const token = localStorage.getItem("StocksUsertoken");
       await axios.put(
-        `http://13.51.178.27:5000/api/var/client/stoploss/${selectedStoploss._id}`,
+        `http://13.61.104.53:5000/api/var/client/stoploss/${selectedStoploss._id}`,
         updatedStoploss,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -100,7 +106,7 @@ const Stoploss = () => {
     try {
       const token = localStorage.getItem("StocksUsertoken");
       await axios.delete(
-        `http://13.51.178.27:5000/api/var/client/stoploss/${selectedStoploss._id}`,
+        `http://13.61.104.53:5000/api/var/client/stoploss/${selectedStoploss._id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -230,7 +236,7 @@ const Stoploss = () => {
           stoploss={selectedStoploss}
         />
       )}
-      {/* ToastContainer for displaying toast notifications */}
+
       <ToastContainer />
     </div>
   );

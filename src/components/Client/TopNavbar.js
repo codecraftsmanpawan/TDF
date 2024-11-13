@@ -22,7 +22,7 @@ const TopNavbar = ({ toggleSidebar }) => {
       const userId = decodedToken.id;
 
       const response = await axios.get(
-        `http://13.51.178.27:5000/api/var/client/clients/${userId}/availableBudget`,
+        `http://13.61.104.53:5000/api/var/client/clients/${userId}/availableBudget`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -41,7 +41,7 @@ const TopNavbar = ({ toggleSidebar }) => {
   const fetchNotifications = async () => {
     try {
       const response = await axios.get(
-        "http://13.51.178.27:5000/api/var/Wishlist/notifications"
+        "http://13.61.104.53:5000/api/var/Wishlist/notifications"
       );
       setNotifications(response.data);
     } catch (error) {
@@ -60,7 +60,7 @@ const TopNavbar = ({ toggleSidebar }) => {
       const config = {
         method: "get",
         maxBodyLength: Infinity,
-        url: `http://13.51.178.27:5000/api/var/client/${userId}/status`,
+        url: `http://13.61.104.53:5000/api/var/client/${userId}/status`,
         headers: {
           Authorization: `Bearer ${token}`,
         },

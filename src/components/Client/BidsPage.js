@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
-import { ToastContainer, toast } from "react-toastify"; // Import toast functions
-import "react-toastify/dist/ReactToastify.css"; // Import the CSS
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Spinner from "./Spinner";
 import ConfirmDeleteModal from "./ConfirmBidDeleteModal";
 import EditBidModal from "./EditBidModal";
@@ -34,7 +34,7 @@ const Bids = () => {
 
         // Fetch bids
         const bidsResponse = await axios.get(
-          `http://13.51.178.27:5000/api/var/client/bids/${decodedToken.id}`,
+          `http://13.61.104.53:5000/api/var/client/bids/${decodedToken.id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -47,7 +47,7 @@ const Bids = () => {
           (bid) => bid.instrumentIdentifier
         );
         const stockPromises = instrumentIdentifiers.map((id) =>
-          axios.get(`http://13.51.178.27:5000/api/var/client/stocks/${id}`, {
+          axios.get(`http://13.61.104.53:5000/api/var/client/stocks/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
           })
         );
@@ -78,34 +78,38 @@ const Bids = () => {
   const confirmDelete = async () => {
     try {
       await axios.delete(
-        `http://13.51.178.27:5000/api/var/client/bids/${selectedBid._id}`,
+        `http://13.61.104.53:5000/api/var/client/bids/${selectedBid._id}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("StocksUsertoken")}`,
           },
         }
       );
-      toast.success("Bid deleted successfully!"); // Show success toast
+      toast.success("Bid deleted successfully!");
       setBids((prevBids) =>
         prevBids.filter((bid) => bid._id !== selectedBid._id)
       ); // Update bids state
     } catch (error) {
       setError(error);
-      toast.error("Failed to delete the bid."); // Show error toast
+      toast.error("Failed to delete the bid.");
     } finally {
       setShowDeleteModal(false);
     }
   };
 
   const handleEditClick = (bid) => {
-    setSelectedBid(bid);
+    setSelectedBid({
+      ...bid,
+      stockName: stockData[bid.instrumentIdentifier]?.name || "N/A",
+      stockExchange: stockData[bid.instrumentIdentifier]?.Exchange || "N/A",
+    });
     setShowEditModal(true);
   };
 
   const updateBid = async (updatedBid) => {
     try {
       const response = await axios.put(
-        `http://13.51.178.27:5000/api/var/client/bids/${selectedBid._id}`,
+        `http://13.61.104.53:5000/api/var/client/bids/${selectedBid._id}`,
         updatedBid,
         {
           headers: {

@@ -22,6 +22,7 @@ import MangeQuantityLimit from "./components/SuperAdmin/MangeQuantityLimit";
 import ViewAllUserStands from "./components/SuperAdmin/ViewAllUserStands";
 import AddNotification from "./components/SuperAdmin/AddNotification";
 import ClientView from "./components/SuperAdmin/ClientView";
+import TradingHours from "./components/SuperAdmin/TradingHoursPage";
 import ClientSearch from "./components/Client/Search";
 import ClientPortfolio from "./components/Client/Portfolio";
 import Chart from "./components/Client/Chart";
@@ -87,6 +88,7 @@ function App() {
         <Route path="/Mange/Quantity/Limit" element={<MangeQuantityLimit />} />
         <Route path="/View/AllUser/Stands" element={<ViewAllUserStands />} />
         <Route path="/Client/View/:id" element={<ClientView />} />
+        <Route path="/tradingHours" element={<TradingHours />} />
         <Route path="/master/Profile" element={<Profile />} />
         <Route path="/master/404" element={<BlockPage />} />
         <Route path="/Add/Notification" element={<AddNotification />} />
